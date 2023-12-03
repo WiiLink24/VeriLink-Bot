@@ -30,6 +30,7 @@ class Poll {
   }
 
   Vote (member, option) {
+    // Only allow a single vote, this will instead see if there's multiple on the same option if multiple is allowed.
     if (this.HasVote(member, option)) {
       return new Error('You have already voted for this poll.')
     }
@@ -64,6 +65,14 @@ class Poll {
     this.options.push(option)
   }
 
+  RemoveOption (option) {
+    if (!this.HasOption(option)) {
+      return new Error('There is no option with that name')
+    }
+
+    this.options.splice(this.options.findIndex(opt => opt === option), 1)
+  }
+
   HasOption (option) {
     return this.options.find(opt => opt === option) != null
   }
@@ -89,9 +98,10 @@ class Poll {
   Prepare () {
     const embed = new EmbedBuilder()
     embed.setTitle(this.title)
-    this.options.forEach(option => embed.addFields({ name: option, value: `${this.GetVotes(option)} votes` }))
+    this.options.forEach((option, index) => embed.addFields({ name: option, value: `${this.GetVotes(option)} ${this.GetVotes(option) === 1 ? 'vote' : 'votes'}` }))
     embed.setTimestamp()
 
+    // Change the title to show closed if the poll is closed
     if (this.is_closed) {
       embed.setTitle(`(Closed) ${this.title}`)
     }
