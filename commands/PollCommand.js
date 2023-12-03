@@ -99,6 +99,7 @@ module.exports = {
         poll = interaction.client.polls.find(p => p.title === interaction.options.getString('poll'))
         poll.Close()
         poll.Remove()
+        interaction.client.polls.splice(interaction.client.polls.indexOf(poll), 1)
         interaction.reply({
           content: 'The poll has been closed.',
           ephemeral: true
