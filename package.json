@@ -17,6 +17,7 @@
     "eslint-plugin-promise": "^6.1.1"
   },
   "dependencies": {
-    "discord.js": "^14.14.1"
+    "discord.js": "^14.14.1",
+    "pg": "^8.11.3"
   }
 }

@@ -5,6 +5,7 @@ const config = require('./config/config.json')
 const InstallCommand = require('./commands/InstallCommand')
 const St000Command = require('./commands/St000')
 const PollCommand = require('./commands/PollCommand')
+const Poll = require('./src/Poll')
 
 const client = new PartnyaClient({ intents: [Discord.IntentsBitField.Flags.Guilds] })
 const rest = new Discord.REST({ version: '9' }).setToken(config.token)
@@ -15,9 +16,12 @@ const GLOBAL_COMMANDS = [
 
 console.log(GLOBAL_COMMANDS.map((command) => command.data))
 
-client.on(Discord.Events.ClientReady, _ => {
+client.on(Discord.Events.ClientReady, async _ => {
   console.log(`Logged in as ${client.user.tag}!`)
   rest.put(Discord.Routes.applicationGuildCommands(client.user.id, '606926504424767488'), { body: GLOBAL_COMMANDS.map((command) => command.data) })
+
+  const polls = (await client.db.session.query('SELECT * FROM polls')).rows
+  client.polls = polls.map(poll => new Poll(client, poll))
 })
 
 client.on(Discord.Events.InteractionCreate, async interaction => {

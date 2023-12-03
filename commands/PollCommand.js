@@ -82,6 +82,7 @@ module.exports = {
       case 'create':
         poll = new Poll(interaction.client, {})
         poll.title = interaction.options.getString('title')
+        poll.Save()
         interaction.client.polls.push(poll)
         interaction.reply({
           content: 'Your poll has been created. It will not be shown until you publish it.',
@@ -91,6 +92,7 @@ module.exports = {
       case 'close':
         poll = interaction.client.polls.find(p => p.title === interaction.options.getString('poll'))
         poll.Close()
+        poll.Save()
         interaction.reply({
           content: 'The poll has been closed.',
           ephemeral: true
@@ -110,6 +112,8 @@ module.exports = {
         poll.message_id = (await interaction.channel.send({ embeds: [poll.Prepare()], components: [actionRow] })).id
         poll.channel_id = interaction.channel.id
         poll.is_published = true
+
+        poll.Save()
 
         interaction.reply({
           content: 'Your poll has been published. It can now be interacted with.',

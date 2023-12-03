@@ -2,12 +2,12 @@ const { EmbedBuilder } = require('discord.js')
 
 class Poll {
   client = null
-  id = 0
+  id = new Date().getTime()
   channel_id = ''
   message_id = ''
   title = ''
   options = []
-  votes = []
+  votes = [{}]
   is_published = false
   is_closed = false
   allow_multiple = false
@@ -35,6 +35,10 @@ class Poll {
 
   UpdateEmbed () {
     this.message.edit({ embeds: [this.Prepare()] })
+  }
+
+  Save () {
+    this.client.db.session.query('INSERT INTO polls ("id", "channel_id", "message_id", "title", "options", "votes", "is_published", "is_closed", "allow_multiple") VALUES ($1, $2, $3, $4, $5::text[], $6::json, $7, $8, $9) ON CONFLICT (id) DO UPDATE SET options = excluded.options, votes = excluded.votes, is_published = excluded.is_published, is_closed = excluded.is_closed, allow_multiple = excluded.allow_multiple', [this.id, this.channel_id, this.message_id, this.title, this.options, this.votes, this.is_published, this.is_closed, this.allow_multiple])
   }
 
   Close () {
