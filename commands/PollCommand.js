@@ -112,9 +112,7 @@ module.exports = {
         poll.message_id = (await interaction.channel.send({ embeds: [poll.Prepare()], components: [actionRow] })).id
         poll.channel_id = interaction.channel.id
         poll.is_published = true
-
         poll.Save()
-
         interaction.reply({
           content: 'Your poll has been published. It can now be interacted with.',
           ephemeral: true
