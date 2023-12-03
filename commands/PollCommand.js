@@ -169,7 +169,7 @@ module.exports = {
       case 'remove':
       case 'multiple':
       case 'publish':
-        await interaction.respond(interaction.client.polls.map(poll => ({ name: poll.title, value: poll.title })))
+        await interaction.respond(interaction.client.polls.filter(poll => !poll.is_published).map(poll => ({ name: poll.title, value: poll.title })))
         break
     }
   }
