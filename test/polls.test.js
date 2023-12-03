@@ -2,7 +2,6 @@ const { describe, it } = require('mocha')
 const assert = require('assert')
 const Poll = require('../src/Poll')
 const fs = require('node:fs')
-const Database = require("../src/Database");
 
 const id = new Date().getTime()
 
