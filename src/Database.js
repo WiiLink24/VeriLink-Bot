@@ -1,7 +1,7 @@
 const { Client } = require('pg')
 const path = require('node:path')
+const fs = require('node:fs')
 const config = require('../config/config.json')
-const fs = require('fs')
 const migrations = path.resolve(__dirname, '../', 'migrations')
 
 class Database {

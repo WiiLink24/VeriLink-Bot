@@ -2,6 +2,7 @@ const { describe, it } = require('mocha')
 const assert = require('assert')
 const Database = require('../src/Database')
 const Poll = require('../src/Poll')
+const fs = require('node:fs')
 
 const id = new Date().getTime()
 
@@ -59,6 +60,8 @@ database.Connect().then(() => {
         assert.equal(poll.options[0], 'Test')
       })
     })
+    // Don't do database stuff without config
+    if (!fs.existsSync('../config/config.json')) return
     describe('#Save', () => {
       const poll = (new Poll(null, sampleData))
       poll.client = { db: database }
