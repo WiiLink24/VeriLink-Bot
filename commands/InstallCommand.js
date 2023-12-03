@@ -1,11 +1,11 @@
-const Command = require('../src/Command')
+const { SlashCommandBuilder } = require('discord.js')
 
-class InstallCommand extends Command {
-  name = 'install'
-  description = 'Instruct user on how to install'
-  permission = 'MANAGE_MESSAGES'
-
-  onRun = (interaction) => {
+module.exports = {
+  data: new SlashCommandBuilder()
+    .setName('install')
+    .setDescription('Instruct the user on how to install Erupe.')
+    .setDefaultMemberPermissions(0x2000),
+  async execute (interaction) {
     interaction.reply(`For instructions on how to install Erupe, follow the guide here: https://discord.com/channels/1001547680637530253/1142729449251549317/1142729449251549317
 Erupeをインストールするのため、このガイドを読んでください: https://discord.com/channels/1001547680637530253/1166954398216364124/1166954398216364124
 
@@ -18,5 +18,3 @@ For instructions on how to install the game, follow the guide here: https://disc
     `)
   }
 }
-
-module.exports = InstallCommand

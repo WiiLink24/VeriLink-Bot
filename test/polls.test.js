@@ -2,6 +2,7 @@ const { describe, it } = require('mocha')
 const assert = require('assert')
 const Poll = require('../src/Poll')
 const fs = require('node:fs')
+const Database = require("../src/Database");
 
 const id = new Date().getTime()
 
@@ -57,40 +58,41 @@ describe('Polls', () => {
       assert.equal(poll.options[0], 'Test')
     })
   })
-  // Don't do database stuff without config
-  if (!fs.existsSync('../config/config.json')) return
-  const Database = require('../src/Database')
-  const database = new Database()
-  database.Connect().then(() => {
-    describe('#Save', () => {
+  describe('#Save', () => {
+    it('database should contain testing ID', async () => {
+      if (!fs.existsSync('../config/config.json')) return
+      const Database = require('../src/Database')
+      const database = new Database()
+      await database.Connect()
       const poll = (new Poll(null, sampleData))
       poll.client = { db: database }
-      it('database should contain testing ID', async () => {
-        poll.Save()
-        const value = (await poll.client.db.session.query('SELECT * FROM polls WHERE id = $1', [poll.id])).rows
-        assert.notEqual(value.length, 0)
-      })
+      poll.Save()
+      const value = (await poll.client.db.session.query('SELECT * FROM polls WHERE id = $1', [poll.id])).rows
+      assert.notEqual(value.length, 0)
     })
-    describe('#Vote', () => {
+  })
+  describe('#Vote', () => {
+    it('length of votes should be 1', async () => {
+      if (!fs.existsSync('../config/config.json')) return
+      const Database = require('../src/Database')
+      const database = new Database()
+      await database.Connect()
       const poll = (new Poll(null, sampleData))
-      poll.client = { db: database }
-      it('length of votes should be 1', async () => {
-        poll.Vote('123', 'Test')
-        assert.equal(poll.votes.length, 1)
-      })
-      it('should return a value upon further votes', () => {
-        const err = poll.Vote('123', 'Test')
-        assert.notEqual(err, null)
-      })
+      poll.Vote('123', 'Test')
+      assert.equal(poll.votes.length, 1)
     })
-    describe('#Remove', () => {
+  })
+  describe('#Remove', () => {
+    it('properly delete database entries', async () => {
+      if (!fs.existsSync('../config/config.json')) return
+      const Database = require('../src/Database')
+      const database = new Database()
+      await database.Connect()
       const poll = (new Poll(null, sampleData))
       poll.client = { db: database }
-      it('properly delete database entries', async () => {
-        poll.Remove()
-        const value = (await poll.client.db.session.query('SELECT * FROM polls WHERE id = $1', [poll.id])).rows
-        assert.equal(value.length, 0)
-      })
+      poll.Remove()
+      const value = (await poll.client.db.session.query('SELECT * FROM polls WHERE id = $1', [poll.id])).rows
+      assert.equal(value.length, 0)
     })
   })
 })

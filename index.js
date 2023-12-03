@@ -12,6 +12,8 @@ const client = new PartnyaClient({ intents: [Discord.IntentsBitField.Flags.Guild
 const rest = new Discord.REST({ version: '9' }).setToken(config.token)
 
 const GLOBAL_COMMANDS = [
+  InstallCommand,
+  St000Command,
   PollCommand
 ]
 
@@ -22,7 +24,7 @@ client.on(Discord.Events.ClientReady, async _ => {
     await client.db.Migrate()
   }
 
-  await rest.put(Discord.Routes.applicationGuildCommands(client.user.id, '606926504424767488'), { body: GLOBAL_COMMANDS.map((command) => command.data)})
+  await rest.put(Discord.Routes.applicationGuildCommands(client.user.id, '606926504424767488'), { body: GLOBAL_COMMANDS.map((command) => command.data) })
   const polls = (await client.db.session.query('SELECT * FROM polls')).rows
   client.polls = polls.map(poll => new Poll(client, poll))
 })

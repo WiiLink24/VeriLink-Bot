@@ -1,11 +1,11 @@
-const Command = require('../src/Command')
+const { SlashCommandBuilder } = require('discord.js')
 
-class St000Command extends Command {
-  name = 'st000'
-  description = 'For issues with st000.pac not found errors.'
-  permission = 'MANAGE_MESSAGES'
-
-  onRun = (interaction) => {
+module.exports = {
+  data: new SlashCommandBuilder()
+    .setName('st000')
+    .setDescription('For issues with st000.pac not found errors.')
+    .setDefaultMemberPermissions(0x2000),
+  async execute (interaction) {
     interaction.reply(`This error means that the server you are connecting to does not have the requested quest file for your quest. This is not an issue with Erupe, but rather the server you are connecting to.
     If you are the server owner, please extract the quests onto the bin folder of your server, linked on the official Erupe repository: https://github.com/zerulight/erupe
 
@@ -14,5 +14,3 @@ class St000Command extends Command {
     `)
   }
 }
-
-module.exports = St000Command
