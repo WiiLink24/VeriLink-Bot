@@ -1,9 +1,20 @@
 const { Client } = require('pg')
+const path = require('node:path')
 const config = require('../config/config.json')
+const fs = require('fs')
+const migrations = path.resolve(__dirname, '../', 'migrations')
 
 class Database {
   constructor () {
     this.session = null
+  }
+
+  async Migrate () {
+    const migrationFiles = fs.readdirSync(migrations).map(migration => String(fs.readFileSync(path.resolve(migrations, migration))))
+
+    for (const migration of migrationFiles) {
+      this.session.query(migration)
+    }
   }
 
   async Connect () {

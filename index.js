@@ -1,6 +1,7 @@
 const Discord = require('discord.js')
 const PartnyaClient = require('./src/PartnyaClient.js')
 const config = require('./config/config.json')
+const flags = process.argv.length > 2 ? process.argv[2] : ''
 
 const InstallCommand = require('./commands/InstallCommand')
 const St000Command = require('./commands/St000')
@@ -14,12 +15,14 @@ const GLOBAL_COMMANDS = [
   PollCommand
 ]
 
-console.log(GLOBAL_COMMANDS.map((command) => command.data))
-
 client.on(Discord.Events.ClientReady, async _ => {
   console.log(`Logged in as ${client.user.tag}!`)
-  rest.put(Discord.Routes.applicationGuildCommands(client.user.id, '606926504424767488'), { body: GLOBAL_COMMANDS.map((command) => command.data) })
+  if (flags === '-migrate') {
+    console.log('Migrating database.')
+    await client.db.Migrate()
+  }
 
+  await rest.put(Discord.Routes.applicationGuildCommands(client.user.id, '606926504424767488'), { body: GLOBAL_COMMANDS.map((command) => command.data)})
   const polls = (await client.db.session.query('SELECT * FROM polls')).rows
   client.polls = polls.map(poll => new Poll(client, poll))
 })
