@@ -65,6 +65,14 @@ class Poll {
     this.options.push(option)
   }
 
+  RemoveOption (option) {
+    if (!this.HasOption(option)) {
+      return new Error('There is no option with that name')
+    }
+
+    this.options.splice(this.options.findIndex(opt => opt === option), 1)
+  }
+
   HasOption (option) {
     return this.options.find(opt => opt === option) != null
   }
