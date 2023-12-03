@@ -5,6 +5,7 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName('poll')
     .setDescription('Create a new poll.')
+    .setDefaultMemberPermissions(0x2000)
     .addSubcommand(subcommand =>
       subcommand
         .setName('create')
