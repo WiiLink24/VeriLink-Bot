@@ -46,10 +46,26 @@ class Poll {
     this.client.db.session.query('INSERT INTO polls ("id", "channel_id", "message_id", "title", "options", "votes", "is_published", "is_closed", "allow_multiple") VALUES ($1, $2, $3, $4, $5::text[], $6::json, $7, $8, $9) ON CONFLICT (id) DO UPDATE SET options = excluded.options, channel_id = excluded.channel_id, message_id = excluded.message_id, votes = excluded.votes, is_published = excluded.is_published, is_closed = excluded.is_closed, allow_multiple = excluded.allow_multiple', [this.id, this.channel_id, this.message_id, this.title, this.options, JSON.stringify(this.votes), this.is_published, this.is_closed, this.allow_multiple])
   }
 
+  Remove () {
+    this.client.db.session.query('DELETE FROM polls WHERE id = $1', [this.id])
+  }
+
   Close () {
     this.is_closed = true
     this.UpdateEmbed()
     this.message.edit({ components: [] })
+  }
+
+  AddOption (option) {
+    if (this.HasOption(option)) {
+      return new Error('An option with this name already exists')
+    }
+
+    this.options.push(option)
+  }
+
+  HasOption (option) {
+    return this.options.find(opt => opt === option) != null
   }
 
   ApplyVote (member, option) {
