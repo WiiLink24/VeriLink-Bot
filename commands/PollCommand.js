@@ -80,6 +80,12 @@ module.exports = {
     let actionRow
     switch (subcommand) {
       case 'create':
+        if (interaction.client.polls.find(p => p.title === interaction.options.getString('title'))) {
+          interaction.reply({
+            content: 'There\'s already a poll with this name.',
+            ephemeral: true
+          })
+        }
         poll = new Poll(interaction.client, {})
         poll.title = interaction.options.getString('title')
         poll.Save()
@@ -92,7 +98,7 @@ module.exports = {
       case 'close':
         poll = interaction.client.polls.find(p => p.title === interaction.options.getString('poll'))
         poll.Close()
-        poll.Save()
+        poll.Remove()
         interaction.reply({
           content: 'The poll has been closed.',
           ephemeral: true
