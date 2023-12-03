@@ -1,6 +1,5 @@
 const { describe, it } = require('mocha')
 const assert = require('assert')
-const Database = require('../src/Database')
 const Poll = require('../src/Poll')
 const fs = require('node:fs')
 
@@ -60,6 +59,7 @@ describe('Polls', () => {
   })
   // Don't do database stuff without config
   if (!fs.existsSync('../config/config.json')) return
+  const Database = require('../src/Database')
   const database = new Database()
   database.Connect().then(() => {
     describe('#Save', () => {
