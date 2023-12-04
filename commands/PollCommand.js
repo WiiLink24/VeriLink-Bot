@@ -26,6 +26,16 @@ const PollCommand = {
             .setDescription('The title of the poll')))
     .addSubcommand(subcommand =>
       subcommand
+        .setName('unpublish')
+        .setDescription('Unpublish a poll and remove the embed.')
+        .addStringOption(option =>
+          option
+            .setName('poll')
+            .setAutocomplete(true)
+            .setRequired(true)
+            .setDescription('The title of the poll')))
+    .addSubcommand(subcommand =>
+      subcommand
         .setName('close')
         .setDescription('Close a poll')
         .addStringOption(option =>
@@ -138,6 +148,18 @@ const PollCommand = {
         poll.Save()
         interaction.reply({
           content: 'Your poll has been published. It can now be interacted with.',
+          ephemeral: true
+        })
+        break
+      case 'unpublish': // /poll publish <poll>
+        poll = interaction.client.polls.find(p => p.title === interaction.options.getString('poll'))
+        poll.message.delete()
+        poll.is_published = false
+        poll.message_id = ''
+        poll.channel_id = ''
+        poll.Save()
+        interaction.reply({
+          content: 'This poll has been unpublished and the embed removed.',
           ephemeral: true
         })
         break
