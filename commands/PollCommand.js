@@ -81,7 +81,7 @@ module.exports = {
     let poll, actionRow
     switch (subcommand) {
       case 'create': // /poll create <title>
-        if (interaction.client.polls.find(p => p.title === interaction.options.getString('title'))) {
+        if (interaction.client.polls.find(p => p.guild_id === interaction.guild.id && p.title === interaction.options.getString('title'))) {
           interaction.reply({
             content: 'There\'s already a poll with this name.',
             ephemeral: true
