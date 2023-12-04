@@ -89,6 +89,7 @@ module.exports = {
           return
         }
         poll = new Poll(interaction.client, {})
+        poll.guild_id = interaction.guild.id
         poll.title = interaction.options.getString('title')
         poll.Save()
         interaction.client.polls.push(poll)

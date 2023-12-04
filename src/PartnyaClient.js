@@ -8,6 +8,10 @@ class PartnyaClient extends Client {
     this.db = new Database()
     this.db.Connect()
   }
+
+  GetPoll (id, guildId) {
+    return this.polls.filter(poll => poll.guild_id === guildId).find(poll => poll.id === id)
+  }
 }
 
 module.exports = PartnyaClient

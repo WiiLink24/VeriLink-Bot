@@ -3,6 +3,7 @@ const { EmbedBuilder } = require('discord.js')
 class Poll {
   client = null
   id = new Date().getTime()
+  guild_id = ''
   channel_id = ''
   message_id = ''
   title = ''
@@ -19,6 +20,10 @@ class Poll {
     if (!Array.isArray(this.votes)) {
       this.votes = []
     }
+  }
+
+  get guild () {
+    return this.client.guilds.cache.get(this.guild_id)
   }
 
   get channel () {
@@ -44,7 +49,7 @@ class Poll {
   }
 
   Save () {
-    this.client.db.session.query('INSERT INTO polls ("id", "channel_id", "message_id", "title", "options", "votes", "is_published", "is_closed", "allow_multiple") VALUES ($1, $2, $3, $4, $5::text[], $6::json, $7, $8, $9) ON CONFLICT (id) DO UPDATE SET options = excluded.options, channel_id = excluded.channel_id, message_id = excluded.message_id, votes = excluded.votes, is_published = excluded.is_published, is_closed = excluded.is_closed, allow_multiple = excluded.allow_multiple', [this.id, this.channel_id, this.message_id, this.title, this.options, JSON.stringify(this.votes), this.is_published, this.is_closed, this.allow_multiple])
+    this.client.db.session.query('INSERT INTO polls ("id", "guild_id", "channel_id", "message_id", "title", "options", "votes", "is_published", "is_closed", "allow_multiple") VALUES ($1, $2, $3, $4, $5, $6::text[], $7::json, $8, $9, $10) ON CONFLICT (id) DO UPDATE SET options = excluded.options, channel_id = excluded.channel_id, message_id = excluded.message_id, votes = excluded.votes, is_published = excluded.is_published, is_closed = excluded.is_closed, allow_multiple = excluded.allow_multiple', [this.id, this.guild_id, this.channel_id, this.message_id, this.title, this.options, JSON.stringify(this.votes), this.is_published, this.is_closed, this.allow_multiple])
   }
 
   Remove () {
