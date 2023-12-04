@@ -86,6 +86,7 @@ module.exports = {
             content: 'There\'s already a poll with this name.',
             ephemeral: true
           })
+          return
         }
         poll = new Poll(interaction.client, {})
         poll.title = interaction.options.getString('title')
@@ -166,10 +167,10 @@ module.exports = {
           await interaction.respond(interaction.client.polls.filter(poll => !poll.is_published).map(poll => ({ name: poll.title, value: poll.title })))
         }
         break
-      case 'add':
       case 'close':
         await interaction.respond(interaction.client.polls.filter(poll => poll.is_published).map(poll => ({ name: poll.title, value: poll.title })))
         break
+      case 'add':
       case 'multiple':
       case 'publish':
         await interaction.respond(interaction.client.polls.filter(poll => !poll.is_published).map(poll => ({ name: poll.title, value: poll.title })))
