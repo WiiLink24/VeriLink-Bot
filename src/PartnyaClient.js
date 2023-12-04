@@ -10,7 +10,7 @@ class PartnyaClient extends Client {
   }
 
   GetPoll (id, guildId) {
-    return this.polls.filter(poll => poll.guild_id === guildId).find(poll => poll.id === id)
+    return this.polls.filter(poll => poll.guild_id === guildId).find(poll => String(poll.id) === String(id))
   }
 }
 
