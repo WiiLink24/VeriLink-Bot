@@ -225,6 +225,7 @@ const PollCommand = {
         }
         break
       case 'close':
+      case 'unpublish':
         await interaction.respond(interaction.client.polls.filter(poll => poll.guild_id === interaction.guild.id && poll.is_published).map(poll => ({ name: poll.title, value: String(poll.id) })))
         break
       case 'add':
