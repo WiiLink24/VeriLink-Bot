@@ -100,6 +100,13 @@ module.exports = {
         break
       case 'close': // /poll close <poll>
         poll = interaction.client.GetPoll(interaction.options.getString('poll'), interaction.guild.id)
+        if (!poll) {
+          interaction.reply({
+            content: 'No poll with that name exists.',
+            ephemeral: true
+          })
+          return
+        }
         poll.Close()
         poll.Remove()
         interaction.client.polls.splice(interaction.client.polls.indexOf(poll), 1)
@@ -110,7 +117,13 @@ module.exports = {
         break
       case 'publish': // /poll publish <poll>
         poll = interaction.client.GetPoll(interaction.options.getString('poll'), interaction.guild.id)
-
+        if (!poll) {
+          interaction.reply({
+            content: 'No poll with that name exists.',
+            ephemeral: true
+          })
+          return
+        }
         actionRow = new ActionRowBuilder()
           .addComponents(poll.options.map(option =>
             new ButtonBuilder()
@@ -130,6 +143,13 @@ module.exports = {
         break
       case 'add': // /poll option add <poll> <option>
         poll = interaction.client.GetPoll(interaction.options.getString('poll'), interaction.guild.id)
+        if (!poll) {
+          interaction.reply({
+            content: 'No poll with that name exists.',
+            ephemeral: true
+          })
+          return
+        }
         poll.AddOption(interaction.options.getString('option'))
         interaction.reply({
           content: `Poll option \`${interaction.options.getString('option')}\` has been added to the poll.`,
@@ -138,6 +158,13 @@ module.exports = {
         break
       case 'remove': // /poll option remove <poll> <option>
         poll = interaction.client.GetPoll(interaction.options.getString('poll'), interaction.guild.id)
+        if (!poll) {
+          interaction.reply({
+            content: 'No poll with that name exists.',
+            ephemeral: true
+          })
+          return
+        }
         poll.RemoveOption(interaction.options.getString('option'))
         interaction.reply({
           content: `Poll option \`${interaction.options.getString('option')}\` has been removed from the poll.`,
@@ -146,6 +173,13 @@ module.exports = {
         break
       case 'multiple': // /poll option multiple <poll>
         poll = interaction.client.GetPoll(interaction.options.getString('poll'), interaction.guild.id)
+        if (!poll) {
+          interaction.reply({
+            content: 'No poll with that name exists.',
+            ephemeral: true
+          })
+          return
+        }
         poll.allow_multiple = !poll.allow_multiple
         interaction.reply({
           content: poll.allow_multiple ? 'Users can submit multiple responses.' : 'Users can only submit one responses.',
