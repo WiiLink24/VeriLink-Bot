@@ -199,16 +199,16 @@ module.exports = {
           poll = interaction.client.GetPoll(interaction.options.getString('poll'), interaction.guild.id)
           await interaction.respond(poll.options.map(option => ({ name: option, value: option })))
         } else if (focused.name === 'poll') {
-          await interaction.respond(interaction.client.polls.filter(poll => poll.guild_id === interaction.guild.id && !poll.is_published).map(poll => ({ name: poll.title, value: poll.id })))
+          await interaction.respond(interaction.client.polls.filter(poll => poll.guild_id === interaction.guild.id && !poll.is_published).map(poll => ({ name: poll.title, value: String(poll.id) })))
         }
         break
       case 'close':
-        await interaction.respond(interaction.client.polls.filter(poll => poll.guild_id === interaction.guild.id && poll.is_published).map(poll => ({ name: poll.title, value: poll.id })))
+        await interaction.respond(interaction.client.polls.filter(poll => poll.guild_id === interaction.guild.id && poll.is_published).map(poll => ({ name: poll.title, value: String(poll.id) })))
         break
       case 'add':
       case 'multiple':
       case 'publish':
-        await interaction.respond(interaction.client.polls.filter(poll => poll.guild_id === interaction.guild.id && !poll.is_published).map(poll => ({ name: poll.title, value: poll.id })))
+        await interaction.respond(interaction.client.polls.filter(poll => poll.guild_id === interaction.guild.id && !poll.is_published).map(poll => ({ name: poll.title, value: String(poll.id) })))
         break
     }
   }
