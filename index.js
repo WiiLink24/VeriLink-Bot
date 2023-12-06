@@ -3,8 +3,7 @@ const PartnyaClient = require('./src/PartnyaClient.js')
 const config = require('./config/config.json')
 const flags = process.argv.length > 2 ? process.argv[2] : ''
 
-const InstallCommand = require('./commands/InstallCommand')
-const St000Command = require('./commands/St000')
+const InstallCommand = require('./commands/GuideCommand')
 const PollCommand = require('./commands/PollCommand')
 const Poll = require('./src/Poll')
 
@@ -13,7 +12,6 @@ const rest = new Discord.REST({ version: '9' }).setToken(config.token)
 
 const GLOBAL_COMMANDS = [
   InstallCommand,
-  St000Command,
   PollCommand
 ]
 
