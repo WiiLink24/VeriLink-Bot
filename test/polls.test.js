@@ -1,7 +1,7 @@
-const { describe, it } = require('mocha')
-const assert = require('assert')
-const Poll = require('../src/Poll')
-const fs = require('node:fs')
+import { describe, it } from 'mocha'
+import assert from 'assert'
+import Poll from '../src/Poll.js'
+import fs from 'node:fs'
 
 const id = new Date().getTime()
 

@@ -6,5 +6,6 @@
         "database": "partnya",
         "password": "",
         "port": "5432"
-    }
+    },
+    "writeConsoleToFile": false
 }

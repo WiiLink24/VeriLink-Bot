@@ -1,5 +1,5 @@
-const { SlashCommandBuilder } = require('discord.js')
-const { GetGuides } = require('../src/utils/GuideHelper')
+import { SlashCommandBuilder } from 'discord.js'
+import { GetGuides } from '../src/utils/GuideHelper.js'
 
 function MakeCommands (builder) {
   GetGuides().forEach(command => {
@@ -11,7 +11,7 @@ function MakeCommands (builder) {
   return builder
 }
 
-module.exports = {
+const GuideCommand = {
   data: MakeCommands(new SlashCommandBuilder()
     .setName('guide')
     .setDescription('Instruct the user on how to install Erupe.')
@@ -21,3 +21,5 @@ module.exports = {
     interaction.reply(command.response)
   }
 }
+
+export default GuideCommand

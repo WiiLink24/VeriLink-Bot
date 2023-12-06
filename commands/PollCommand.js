@@ -1,7 +1,7 @@
-const Poll = require('../src/Poll')
-const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder } = require('discord.js')
+import Poll from '../src/Poll.js'
+import { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder } from 'discord.js'
 
-module.exports = {
+const PollCommand = {
   data: new SlashCommandBuilder()
     .setName('poll')
     .setDescription('Create a new poll.')
@@ -213,3 +213,5 @@ module.exports = {
     }
   }
 }
+
+export default PollCommand

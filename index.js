@@ -1,11 +1,13 @@
-const Discord = require('discord.js')
-const PartnyaClient = require('./src/PartnyaClient.js')
-const config = require('./config/config.json')
-const flags = process.argv.length > 2 ? process.argv[2] : ''
+import Discord from 'discord.js'
+import PartnyaClient from './src/PartnyaClient.js'
+import InstallCommand from './commands/GuideCommand.js'
+import PollCommand from './commands/PollCommand.js'
+import Poll from './src/Poll.js'
+import { Logger } from './src/Logger.js'
+import fs from 'node:fs'
 
-const InstallCommand = require('./commands/GuideCommand')
-const PollCommand = require('./commands/PollCommand')
-const Poll = require('./src/Poll')
+const config = JSON.parse(String(fs.readFileSync('./config/config.json')))
+const flags = process.argv.length > 2 ? process.argv[2] : ''
 
 const client = new PartnyaClient({ intents: [Discord.IntentsBitField.Flags.Guilds] })
 const rest = new Discord.REST({ version: '9' }).setToken(config.token)
@@ -16,11 +18,7 @@ const GLOBAL_COMMANDS = [
 ]
 
 client.on(Discord.Events.ClientReady, async _ => {
-  console.log(`Logged in as ${client.user.tag}!`)
-  if (flags === '-migrate') {
-    console.log('Migrating database.')
-    await client.db.Migrate()
-  }
+  Logger.info(`Client logged in as user: ${client.user.tag}!`)
 
   await rest.put(Discord.Routes.applicationCommands(client.user.id), { body: GLOBAL_COMMANDS.map((command) => command.data) })
   const polls = (await client.db.session.query('SELECT * FROM polls')).rows
@@ -65,4 +63,14 @@ client.on(Discord.Events.InteractionCreate, async interaction => {
   }
 })
 
-client.login(config.token)
+await client.db.Connect()
+
+if (flags === '-migrate') {
+  Logger.info('Starting database migration...')
+  // Import and migration the database
+  await client.db.Migrate()
+
+  process.exit() // Exit once migration is complete
+} else {
+  client.login(config.token)
+}

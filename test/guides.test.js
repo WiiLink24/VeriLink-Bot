@@ -1,9 +1,9 @@
-const { describe, it } = require('mocha')
-const assert = require('assert')
-const {
+import { describe, it } from 'mocha'
+import assert from 'assert'
+import {
   GetGuideCount,
   GetGuides
-} = require('../src/utils/GuideHelper')
+} from '../src/utils/GuideHelper.js'
 
 describe('Guides', () => {
   describe('@load', () => {

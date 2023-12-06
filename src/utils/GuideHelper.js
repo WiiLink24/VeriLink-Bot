@@ -1,25 +1,21 @@
-const fs = require('node:fs')
-const path = require('node:path')
-const guidePath = path.resolve(__dirname, '../', '../', 'guides')
+import fs from 'node:fs'
+import path from 'node:path'
+import { Logger } from '../Logger.js'
 
+const guidePath = path.resolve('guides')
 let guides = []
 
-function GetGuideCount () {
+export function GetGuideCount () {
   return fs.readdirSync(path.resolve(guidePath)).length
 }
 
-function ReloadGuides () {
-  console.log('Loading guides')
+function LoadGuides () {
+  Logger.info('Loading Guide Commands...')
   guides = fs.readdirSync(guidePath).map(guide => JSON.parse(String(fs.readFileSync(path.resolve(guidePath, guide)))))
 }
 
-function GetGuides () {
+export function GetGuides () {
   return guides
 }
 
-ReloadGuides()
-
-module.exports = {
-  GetGuides,
-  GetGuideCount
-}
+LoadGuides()

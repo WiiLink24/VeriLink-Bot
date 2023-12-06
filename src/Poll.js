@@ -1,6 +1,6 @@
-const { EmbedBuilder } = require('discord.js')
+import { EmbedBuilder } from 'discord.js'
 
-class Poll {
+export default class Poll {
   client = null
   id = new Date().getTime()
   guild_id = ''
@@ -114,5 +114,3 @@ class Poll {
     return embed.data
   }
 }
-
-module.exports = Poll
