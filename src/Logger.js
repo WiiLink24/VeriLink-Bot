@@ -1,37 +1,40 @@
-const fs = require('node:fs')
-const chalk = require('chalk')
-const path = require('node:path')
-const logPath = path.resolve(__dirname, '../', 'logs')
+import fs from 'node:fs'
+import chalk from 'chalk'
+import path from 'node:path'
+
+const logPath = path.resolve('logs', `${new Date().toLocaleDateString().replace(/\//g, '-')}.log`)
 
 function writeLogFile (text) {
-  fs.appendFile(logPath, text, (fd) => {})
+  fs.appendFileSync(logPath, text)
 }
 
 function info (text) {
-  writeLogFile(text)
-  console.log(text)
+  const logText = `[${new Date().toLocaleTimeString()}] [Info] ${text}`
+  writeLogFile(logText)
+  console.log(`${chalk.white()}${logText}`)
 }
 
 function debug (text) {
-  writeLogFile(text)
-  console.log(text)
+  const logText = `[${new Date().toLocaleTimeString()}] [Debug] ${text}`
+  writeLogFile(logText)
+  console.log(`${chalk.gray()}${logText}`)
 }
 
 function warn (text) {
-  writeLogFile(text)
-  console.log(text)
+  const logText = `[${new Date().toLocaleTimeString()}] [Warn] ${text}`
+  writeLogFile(logText)
+  console.log(`${chalk.yellow()}${logText}`)
 }
 
 function error (text) {
-  writeLogFile(text)
-  console.log(text)
+  const logText = `[${new Date().toLocaleTimeString()}] [Error] ${text}`
+  writeLogFile(logText)
+  console.log(`${chalk.red()}${logText}`)
 }
 
-module.exports = {
-  Logger: {
-    debug,
-    info,
-    warn,
-    error
-  }
+export const Logger = {
+  debug,
+  info,
+  warn,
+  error
 }

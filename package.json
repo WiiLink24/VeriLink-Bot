@@ -2,11 +2,12 @@
   "name": "partnya",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "./index.js",
+  "type": "module",
   "scripts": {
     "test": "npx mocha",
-    "start": "node index.js",
-    "migrate": "node index.js -migrate"
+    "start": "node ./index.js",
+    "migrate": "node ./index.js -migrate"
   },
   "author": "",
   "license": "ISC",

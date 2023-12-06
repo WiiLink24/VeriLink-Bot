@@ -1,27 +1,31 @@
-const { Client } = require('pg')
-const path = require('node:path')
-const fs = require('node:fs')
-const config = require('../config/config.json')
-const migrations = path.resolve(__dirname, '../', 'migrations')
+import pg from 'pg'
+import path from 'node:path'
+import fs from 'node:fs'
+import { Logger } from './Logger.js'
 
-class Database {
+const config = JSON.parse(String(fs.readFileSync('./config/config.json')))
+const { Client } = pg
+const migrations = path.resolve('migrations')
+
+export default class Database {
   constructor () {
     this.session = null
   }
 
   async Migrate () {
-    const migrationFiles = fs.readdirSync(migrations).map(migration => String(fs.readFileSync(path.resolve(migrations, migration))))
+    const migrationFiles = fs.readdirSync(migrations)
 
     for (const migration of migrationFiles) {
-      this.session.query(migration)
+      Logger.debug(`Applying: ${migration}`)
+      const sql = String(fs.readFileSync(path.resolve(migrations, migration)))
+      await this.session.query(sql)
     }
   }
 
   async Connect () {
     this.session = new Client(config.database)
-    this.session.connect()
-    console.log('Database connected')
+    Logger.info('Database connection begun.')
+    await this.session.connect()
+    Logger.info('Successfully connected to database.')
   }
 }
-
-module.exports = Database
