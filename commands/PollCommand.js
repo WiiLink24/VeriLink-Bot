@@ -152,7 +152,8 @@ const PollCommand = {
         })
         break
       case 'unpublish': // /poll publish <poll>
-        poll = interaction.client.polls.find(p => p.title === interaction.options.getString('poll'))
+        poll = interaction.client.GetPoll(interaction.options.getString('poll'), interaction.guild.id)
+        await poll.channel.messages.fetch(poll.message_id)
         poll.message.delete()
         poll.is_published = false
         poll.message_id = ''
