@@ -39,7 +39,7 @@ export default class Poll {
     const vote = this.GetVote(member)
     if (vote) {
       if (vote.option === option) return new Error('You have already voted for this option.')
-      if (!vote.allow_multiple) {
+      if (!this.allow_multiple) {
         vote.option = option
         this.Save()
         return

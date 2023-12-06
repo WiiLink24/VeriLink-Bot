@@ -12,9 +12,12 @@ const sampleData = {
 }
 
 describe('Polls', function () {
-  const database = new Database()
-  database.Connect()
-  this.timeout(200)
+  let database = null
+  if (fs.existsSync('./config/config.json')) {
+    database = new Database()
+    database.Connect()
+    this.timeout(200)
+  }
   describe('unpublished', () => {
     const poll = (new Poll(null, sampleData))
     it('should have the title \'Test Title\'', () => {
@@ -84,18 +87,26 @@ describe('Polls', function () {
       poll.Vote('123', 'Test')
       assert.equal(poll.votes.length, 1)
     })
-    it('should have a vote with the option of \'Test\'', () => {
+    it('should have a vote with the option of \'Test\'', function () {
       if (!database) {
         return this.skip()
       }
       assert.notEqual(poll.votes.find((vote) => vote.option === 'Test'), null)
     })
-    it('should change vote to option of \'Test 2\'', () => {
+    it('should change vote to option of \'Test 2\'', function () {
       if (!database) {
         return this.skip()
       }
       poll.Vote('123', 'Test 2')
-      assert.notEqual(poll.votes.find((vote) => vote.option === 'Test 2'), null)
+      assert.equal(poll.votes.length === 1 && poll.votes.find((vote) => vote.option === 'Test 2') != null, true)
+    })
+    it('should allow multiple responses in multiresponse mode', function () {
+      if (!database) {
+        return this.skip()
+      }
+      poll.allow_multiple = true
+      poll.Vote('123', 'Test')
+      assert.equal(poll.votes.length, 2)
     })
   })
   describe('#Remove', function () {
