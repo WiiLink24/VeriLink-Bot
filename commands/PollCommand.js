@@ -117,6 +117,7 @@ const PollCommand = {
           })
           return
         }
+        await poll.channel.messages.fetch(poll.message_id)
         poll.Close()
         poll.Remove()
         interaction.client.polls.splice(interaction.client.polls.indexOf(poll), 1)
@@ -153,6 +154,13 @@ const PollCommand = {
         break
       case 'unpublish': // /poll publish <poll>
         poll = interaction.client.GetPoll(interaction.options.getString('poll'), interaction.guild.id)
+        if (!poll) {
+          interaction.reply({
+            content: 'No poll with that name exists.',
+            ephemeral: true
+          })
+          return
+        }
         await poll.channel.messages.fetch(poll.message_id)
         poll.message.delete()
         poll.is_published = false
