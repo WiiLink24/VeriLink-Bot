@@ -7,7 +7,7 @@ const config = fs.existsSync('./config/config.json') ? JSON.parse(String(fs.read
 
 function writeLogFile (text) {
   if (config === null || !config.writeConsoleToFile) return
-  fs.appendFileSync(logPath, text)
+  fs.appendFileSync(logPath, `${text}\n`)
 }
 
 function info (text) {
