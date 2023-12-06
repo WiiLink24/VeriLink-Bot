@@ -3,8 +3,10 @@ import chalk from 'chalk'
 import path from 'node:path'
 
 const logPath = path.resolve('logs', `${new Date().toLocaleDateString().replace(/\//g, '-')}.log`)
+const config = fs.existsSync('./config/config.json') ? JSON.parse(String(fs.readFileSync('./config/config.json'))) : null
 
 function writeLogFile (text) {
+  if (config === null || !config.writeConsoleToFile) return
   fs.appendFileSync(logPath, text)
 }
 
