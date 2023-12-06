@@ -26,6 +26,16 @@ const PollCommand = {
             .setDescription('The title of the poll')))
     .addSubcommand(subcommand =>
       subcommand
+        .setName('unpublish')
+        .setDescription('Unpublish a poll and remove the embed.')
+        .addStringOption(option =>
+          option
+            .setName('poll')
+            .setAutocomplete(true)
+            .setRequired(true)
+            .setDescription('The title of the poll')))
+    .addSubcommand(subcommand =>
+      subcommand
         .setName('close')
         .setDescription('Close a poll')
         .addStringOption(option =>
@@ -107,6 +117,7 @@ const PollCommand = {
           })
           return
         }
+        await poll.channel.messages.fetch(poll.message_id)
         poll.Close()
         poll.Remove()
         interaction.client.polls.splice(interaction.client.polls.indexOf(poll), 1)
@@ -138,6 +149,26 @@ const PollCommand = {
         poll.Save()
         interaction.reply({
           content: 'Your poll has been published. It can now be interacted with.',
+          ephemeral: true
+        })
+        break
+      case 'unpublish': // /poll publish <poll>
+        poll = interaction.client.GetPoll(interaction.options.getString('poll'), interaction.guild.id)
+        if (!poll) {
+          interaction.reply({
+            content: 'No poll with that name exists.',
+            ephemeral: true
+          })
+          return
+        }
+        await poll.channel.messages.fetch(poll.message_id)
+        poll.message.delete()
+        poll.is_published = false
+        poll.message_id = ''
+        poll.channel_id = ''
+        poll.Save()
+        interaction.reply({
+          content: 'This poll has been unpublished and the embed removed.',
           ephemeral: true
         })
         break
@@ -203,6 +234,7 @@ const PollCommand = {
         }
         break
       case 'close':
+      case 'unpublish':
         await interaction.respond(interaction.client.polls.filter(poll => poll.guild_id === interaction.guild.id && poll.is_published).map(poll => ({ name: poll.title, value: String(poll.id) })))
         break
       case 'add':
