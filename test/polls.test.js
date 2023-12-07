@@ -2,6 +2,7 @@ import { describe, it } from 'mocha'
 import assert from 'assert'
 import Poll from '../src/Poll.js'
 import fs from 'node:fs'
+import Database from '../src/Database.js'
 
 const id = new Date().getTime()
 
@@ -10,7 +11,13 @@ const sampleData = {
   title: 'Test Title'
 }
 
-describe('Polls', () => {
+describe('Polls', function () {
+  let database = null
+  if (fs.existsSync('./config/config.json')) {
+    database = new Database()
+    database.Connect()
+    this.timeout(200)
+  }
   describe('unpublished', () => {
     const poll = (new Poll(null, sampleData))
     it('should have the title \'Test Title\'', () => {
@@ -58,11 +65,10 @@ describe('Polls', () => {
     })
   })
   describe('#Save', () => {
-    it('database should contain testing ID', async () => {
-      if (!fs.existsSync('../config/config.json')) return
-      const Database = require('../src/Database')
-      const database = new Database()
-      await database.Connect()
+    it('database should contain testing ID', async function () {
+      if (!database) {
+        return this.skip()
+      }
       const poll = (new Poll(null, sampleData))
       poll.client = { db: database }
       poll.Save()
@@ -70,23 +76,44 @@ describe('Polls', () => {
       assert.notEqual(value.length, 0)
     })
   })
-  describe('#Vote', () => {
-    it('length of votes should be 1', async () => {
-      if (!fs.existsSync('../config/config.json')) return
-      const Database = require('../src/Database')
-      const database = new Database()
-      await database.Connect()
-      const poll = (new Poll(null, sampleData))
+  describe('#Vote', function () {
+    if (!fs.existsSync('./config/config.json')) return
+
+    const poll = (new Poll({ db: database }, sampleData))
+    it('length of votes should be 1', function () {
+      if (!database) {
+        return this.skip()
+      }
       poll.Vote('123', 'Test')
       assert.equal(poll.votes.length, 1)
     })
+    it('should have a vote with the option of \'Test\'', function () {
+      if (!database) {
+        return this.skip()
+      }
+      assert.notEqual(poll.votes.find((vote) => vote.option === 'Test'), null)
+    })
+    it('should change vote to option of \'Test 2\'', function () {
+      if (!database) {
+        return this.skip()
+      }
+      poll.Vote('123', 'Test 2')
+      assert.equal(poll.votes.length === 1 && poll.votes.find((vote) => vote.option === 'Test 2') != null, true)
+    })
+    it('should allow multiple responses in multiresponse mode', function () {
+      if (!database) {
+        return this.skip()
+      }
+      poll.allow_multiple = true
+      poll.Vote('123', 'Test')
+      assert.equal(poll.votes.length, 2)
+    })
   })
-  describe('#Remove', () => {
-    it('properly delete database entries', async () => {
-      if (!fs.existsSync('../config/config.json')) return
-      const Database = require('../src/Database')
-      const database = new Database()
-      await database.Connect()
+  describe('#Remove', function () {
+    it('properly delete database entries', async function () {
+      if (!database) {
+        return this.skip()
+      }
       const poll = (new Poll(null, sampleData))
       poll.client = { db: database }
       poll.Remove()

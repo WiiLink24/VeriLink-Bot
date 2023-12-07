@@ -36,8 +36,14 @@ export default class Poll {
 
   Vote (member, option) {
     // Only allow a single vote, this will instead see if there's multiple on the same option if multiple is allowed.
-    if (this.HasVote(member, option)) {
-      return new Error('You have already voted for this poll.')
+    const vote = this.GetVote(member)
+    if (vote) {
+      if (vote.option === option) return new Error('You have already voted for this option.')
+      if (!this.allow_multiple) {
+        vote.option = option
+        this.Save()
+        return
+      }
     }
 
     this.ApplyVote(member, option)
@@ -86,13 +92,9 @@ export default class Poll {
     this.votes.push({ member, option })
   }
 
-  HasVote (member, option) {
+  GetVote (member) {
     return this.votes.find(vote => {
-      if (!this.allow_multiple) {
-        return vote.member === member
-      } else {
-        return vote.member === member && vote.option === option
-      }
+      return vote.member === member
     })
   }
 
