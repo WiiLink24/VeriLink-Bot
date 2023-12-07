@@ -65,7 +65,7 @@ describe('Polls', function () {
     })
   })
   describe('#Save', () => {
-    it('database should contain testing ID', async () => {
+    it('database should contain testing ID', async function () {
       if (!database) {
         return this.skip()
       }
@@ -110,7 +110,7 @@ describe('Polls', function () {
     })
   })
   describe('#Remove', function () {
-    it('properly delete database entries', async () => {
+    it('properly delete database entries', async function () {
       if (!database) {
         return this.skip()
       }
