@@ -3,7 +3,7 @@ import path from 'node:path'
 import fs from 'node:fs'
 import { Logger } from './Logger.js'
 
-const config = JSON.parse(String(fs.readFileSync('./config/config.json')))
+const config = fs.existsSync('./config/config.json') ? JSON.parse(String(fs.readFileSync('./config/config.json'))) : null
 const { Client } = pg
 const migrations = path.resolve('migrations')
 
