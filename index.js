@@ -1,26 +1,18 @@
 import Discord from 'discord.js'
 import PartnyaClient from './src/PartnyaClient.js'
-import InstallCommand from './commands/GuideCommand.js'
-import PollCommand from './commands/PollCommand.js'
 import Poll from './src/Poll.js'
 import { Logger } from './src/Logger.js'
 import fs from 'node:fs'
 
 const config = JSON.parse(String(fs.readFileSync('./config/config.json')))
 const flags = process.argv.length > 2 ? process.argv[2] : ''
-
 const client = new PartnyaClient({ intents: [Discord.IntentsBitField.Flags.Guilds] })
-const rest = new Discord.REST({ version: '9' }).setToken(config.token)
-
-const GLOBAL_COMMANDS = [
-  InstallCommand,
-  PollCommand
-]
 
 client.on(Discord.Events.ClientReady, async _ => {
   Logger.info(`Client logged in as user: ${client.user.tag}!`)
 
-  await rest.put(Discord.Routes.applicationCommands(client.user.id), { body: GLOBAL_COMMANDS.map((command) => command.data) })
+  // Load client data (Commands, Polls, etc)
+  await client.load()
   const polls = (await client.db.session.query('SELECT * FROM polls')).rows
   client.polls = polls.map(poll => new Poll(client, poll))
 })

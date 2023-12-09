@@ -1,4 +1,5 @@
 import { EmbedBuilder } from 'discord.js'
+import PollOptions from './PollOptions.js'
 
 export default class Poll {
   client = null
@@ -7,7 +8,7 @@ export default class Poll {
   channel_id = ''
   message_id = ''
   title = ''
-  options = []
+  options = new PollOptions([])
   votes = []
   is_published = false
   is_closed = false
@@ -15,6 +16,7 @@ export default class Poll {
 
   constructor (client, data) {
     this.client = client
+    data.options = new PollOptions(Array.isArray(data.options) ? data.options : [])
     Object.assign(this, data)
 
     if (!Array.isArray(this.votes)) {
@@ -55,10 +57,11 @@ export default class Poll {
   }
 
   Save () {
+    this.Close()
     this.client.db.session.query('INSERT INTO polls ("id", "guild_id", "channel_id", "message_id", "title", "options", "votes", "is_published", "is_closed", "allow_multiple") VALUES ($1, $2, $3, $4, $5, $6::text[], $7::json, $8, $9, $10) ON CONFLICT (id) DO UPDATE SET options = excluded.options, channel_id = excluded.channel_id, message_id = excluded.message_id, votes = excluded.votes, is_published = excluded.is_published, is_closed = excluded.is_closed, allow_multiple = excluded.allow_multiple', [this.id, this.guild_id, this.channel_id, this.message_id, this.title, this.options, JSON.stringify(this.votes), this.is_published, this.is_closed, this.allow_multiple])
   }
 
-  Remove () {
+  CloseAndRemove () {
     this.client.db.session.query('DELETE FROM polls WHERE id = $1', [this.id])
   }
 
@@ -66,26 +69,6 @@ export default class Poll {
     this.is_closed = true
     this.UpdateEmbed()
     this.message.edit({ components: [] })
-  }
-
-  AddOption (option) {
-    if (this.HasOption(option)) {
-      return new Error('An option with this name already exists')
-    }
-
-    this.options.push(option)
-  }
-
-  RemoveOption (option) {
-    if (!this.HasOption(option)) {
-      return new Error('There is no option with that name')
-    }
-
-    this.options.splice(this.options.findIndex(opt => opt === option), 1)
-  }
-
-  HasOption (option) {
-    return this.options.find(opt => opt === option) != null
   }
 
   ApplyVote (member, option) {
