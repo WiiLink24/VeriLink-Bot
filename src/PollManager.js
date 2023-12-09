@@ -19,7 +19,7 @@ export default class PollManager {
    * @returns {*}
    */
   get (identifier, guild) {
-    return this.all(guild).find(poll => poll.title === identifier || poll.id === identifier)
+    return this.all(guild).find(poll => poll.title === identifier || poll.id === identifier || poll.message_id === identifier)
   }
 
   /**

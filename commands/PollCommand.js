@@ -96,27 +96,28 @@ const PollCommand = {
       case 'create': // /poll create <title>
         if (poll) return new CommandResponse('There\'s already a poll with that name.')
         poll = new Poll(interaction.client, { title: interaction.options.getString('title'), guild_id: interaction.channel.guild.id })
-        poll.Save()
-
         interaction.client.polls.add(poll)
+
+        poll.save()
         return new CommandResponse('Your poll has been created. It will not be shown until you publish it.')
       case 'close': // /poll close <title>
         if (!poll) return new CommandResponse('No poll with that name exists.')
         // prefetch messages for deletion, this is specifically an issue since the cache doesn't persist restarts.
         await poll.channel.messages.fetch(poll.message_id)
-        poll.CloseAndRemove()
         interaction.client.polls.splice(interaction.client.polls.indexOf(poll), 1)
 
+        poll.remove()
+        poll.update()
         return new CommandResponse('The poll has been closed.')
       case 'publish': // /poll publish <title>
         if (!poll) return new Error('No poll with that name exists.')
         if (poll.is_published) return new Error('That poll is already published!')
         actionRow = new ActionRowBuilder().addComponents(poll.options.map(option => new ButtonBuilder().setCustomId(`vote_${option}`).setLabel(option).setStyle(1)))
-        poll.message_id = (await interaction.channel.send({ embeds: [poll.Prepare()], components: [actionRow] })).id
+        poll.message_id = (await interaction.channel.send({ embeds: [poll.embed], components: [actionRow] })).id
         poll.channel_id = interaction.channel.id
         poll.is_published = true
-        poll.Save()
 
+        poll.save()
         return new CommandResponse('Your poll has been published!')
       case 'unpublish': // /poll publish <title>
         if (!poll) return new Error('No poll with that name exists.')
@@ -128,20 +129,22 @@ const PollCommand = {
         poll.message_id = ''
         poll.channel_id = ''
         poll.is_published = false
-        poll.Save()
 
+        poll.save()
         return new CommandResponse('Your poll has been unpublished, and the embed removed.')
       case 'add': // /poll option add <title> <option>
         if (!poll) return new Error('No poll with that name exists.')
         // if an error occurs whilst adding an option, list the error.
         if ((err = poll.options.add(interaction.options.getString('option'))) !== null) return new CommandResponse(err)
 
+        poll.save()
         return new CommandResponse(`Poll option \`${interaction.options.getString('option')}\` has been added to the poll.`)
       case 'remove': // /poll option remove <title> <option>
         if (!poll) return new Error('No poll with that name exists.')
         // if an error occurs whilst adding an option, list the error.
         if ((err = poll.options.remove(interaction.options.getString('option'))) !== null) return new CommandResponse(err)
 
+        poll.save()
         return new CommandResponse(`Poll option \`${interaction.options.getString('option')}\` has been removed from the poll.`)
       case 'multiple': // /poll option multiple <poll>
         if (!poll) return new Error('No poll with that name exists.')
@@ -175,6 +178,14 @@ const PollCommand = {
         await interaction.respond(interaction.client.polls.unpublished(interaction.guild.id).map(poll => ({ name: poll.title, value: String(poll.id) })))
         break
     }
+  },
+  async button (interaction, id) {
+    const poll = interaction.client.polls.get(interaction.message.id)
+    const err = poll.votes.add({ member: interaction.member.id, option: id[1] })
+    if (err !== null) return new CommandResponse(err)
+    poll.save()
+    poll.update()
+    interaction.reply({ content: `You have answered \`${id[1]}\` to the poll!`, ephemeral: true })
   }
 }
 

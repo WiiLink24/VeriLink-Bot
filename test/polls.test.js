@@ -123,7 +123,7 @@ describe('Poll', function () {
   const poll = new Poll(null, sampleData)
 
   describe('#close', function () {
-    poll.Close()
+    poll.close()
     it('should set is_closed to \'true\'', function () {
       assert.equal(poll.is_closed, true)
     })

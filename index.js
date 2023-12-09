@@ -18,18 +18,19 @@ client.on(Discord.Events.ClientReady, async _ => {
 })
 
 client.on(Discord.Events.InteractionCreate, async interaction => {
+  let command
   if (interaction.isCommand()) {
-    const command = GLOBAL_COMMANDS.find(command => command.data.name === interaction.commandName)
+    command = client.commands.get(interaction.commandName)
     if (!command) return
 
     try {
-      await command.execute(interaction)
+      interaction.reply((await command.execute(interaction)).data)
     } catch (error) {
       console.error(error)
       await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true })
     }
   } else if (interaction.isAutocomplete()) {
-    const command = GLOBAL_COMMANDS.find(command => command.data.name === interaction.commandName)
+    command = client.commands.get(interaction.commandName)
     if (!command) return
 
     try {
@@ -38,18 +39,16 @@ client.on(Discord.Events.InteractionCreate, async interaction => {
       console.error(error)
     }
   } else if (interaction.isButton()) {
-    const type = interaction.customId.split('_')
-    let poll, err
-    switch (type[0]) {
+    const id = interaction.customId.split('_')
+    switch (id[0]) {
       case 'vote':
-        poll = interaction.client.polls.find(poll => poll.message_id === interaction.message.id)
-        err = poll.Vote(interaction.member.id, type[1])
-        if (err) {
-          interaction.reply({ content: err.message, ephemeral: true })
-          return
+        command = client.commands.get('poll')
+
+        try {
+          await command.button(interaction, id)
+        } catch (error) {
+          Logger.error(error)
         }
-        poll.UpdateEmbed()
-        interaction.reply({ content: `You have answered \`${type[1]}\` to the poll!`, ephemeral: true })
         break
     }
   }

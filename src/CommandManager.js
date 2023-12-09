@@ -19,7 +19,7 @@ export default class CommandManager {
   }
 
   get (name) {
-    return this._commands.find(command => command.name === name)
+    return this._commands.find(command => command.data.name === name)
   }
 
   all () {
