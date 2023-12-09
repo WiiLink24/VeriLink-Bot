@@ -1,6 +1,5 @@
 import Discord from 'discord.js'
 import PartnyaClient from './src/PartnyaClient.js'
-import Poll from './src/Poll.js'
 import { Logger } from './src/Logger.js'
 import fs from 'node:fs'
 
