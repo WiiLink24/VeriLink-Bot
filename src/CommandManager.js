@@ -1,9 +1,5 @@
-import path from 'node:path'
-import fs from 'node:fs'
 import InstallCommand from '../commands/GuideCommand.js'
 import PollCommand from '../commands/PollCommand.js'
-
-const commands = path.resolve('commands')
 
 export default class CommandManager {
   constructor (client) {
