@@ -14,10 +14,6 @@ export default class CommandManager {
     ]
   }
 
-  files () {
-    return fs.readdirSync(commands)
-  }
-
   get (name) {
     return this._commands.find(command => command.data.name === name)
   }
