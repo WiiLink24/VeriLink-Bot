@@ -15,7 +15,7 @@ export default class PartnyaClient extends Client {
   async load () {
     await this.rest.put(Discord.Routes.applicationCommands(this.user.id), { body: this.commands.all().map((command) => command.data) })
 
-    this.polls.set((await this.db.session.query('SELECT * FROM polls')).rows)
+    this.polls.set((await this.db.session.query('SELECT * FROM polls')).rows.map(poll => new Poll(this, poll)))
   }
 
   GetPoll (id, guildId) {

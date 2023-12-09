@@ -110,9 +110,9 @@ const PollCommand = {
         poll.update()
         return new CommandResponse('The poll has been closed.')
       case 'publish': // /poll publish <title>
-        if (!poll) return new Error('No poll with that name exists.')
-        if (poll.is_published) return new Error('That poll is already published!')
-        actionRow = new ActionRowBuilder().addComponents(poll.options.map(option => new ButtonBuilder().setCustomId(`vote_${option}`).setLabel(option).setStyle(1)))
+        if (!poll) return new CommandResponse('No poll with that name exists.')
+        if (poll.is_published) return new CommandResponse('That poll is already published!')
+        actionRow = new ActionRowBuilder().addComponents(poll.options.all().map(option => new ButtonBuilder().setCustomId(`vote_${option}`).setLabel(option).setStyle(1)))
         poll.message_id = (await interaction.channel.send({ embeds: [poll.embed], components: [actionRow] })).id
         poll.channel_id = interaction.channel.id
         poll.is_published = true
@@ -120,9 +120,9 @@ const PollCommand = {
         poll.save()
         return new CommandResponse('Your poll has been published!')
       case 'unpublish': // /poll publish <title>
-        if (!poll) return new Error('No poll with that name exists.')
+        if (!poll) return new CommandResponse('No poll with that name exists.')
         // polls which haven't been published shouldn't be unpublished.
-        if (!poll.is_published) return new Error('That poll has not yet been published!')
+        if (!poll.is_published) return new CommandResponse('That poll has not yet been published!')
         // prefetch messages for deletion, this is specifically an issue since the cache doesn't persist restarts.
         await poll.channel.messages.fetch(poll.message_id)
         poll.message.delete()
@@ -133,21 +133,21 @@ const PollCommand = {
         poll.save()
         return new CommandResponse('Your poll has been unpublished, and the embed removed.')
       case 'add': // /poll option add <title> <option>
-        if (!poll) return new Error('No poll with that name exists.')
+        if (!poll) return new CommandResponse('No poll with that name exists.')
         // if an error occurs whilst adding an option, list the error.
-        if ((err = poll.options.add(interaction.options.getString('option'))) !== null) return new CommandResponse(err)
+        if ((err = poll.options.add(interaction.options.getString('option'))) !== undefined) return new CommandResponse(err.message)
 
         poll.save()
         return new CommandResponse(`Poll option \`${interaction.options.getString('option')}\` has been added to the poll.`)
       case 'remove': // /poll option remove <title> <option>
-        if (!poll) return new Error('No poll with that name exists.')
+        if (!poll) return new CommandResponse('No poll with that name exists.')
         // if an error occurs whilst adding an option, list the error.
         if ((err = poll.options.remove(interaction.options.getString('option'))) !== null) return new CommandResponse(err)
 
         poll.save()
         return new CommandResponse(`Poll option \`${interaction.options.getString('option')}\` has been removed from the poll.`)
       case 'multiple': // /poll option multiple <poll>
-        if (!poll) return new Error('No poll with that name exists.')
+        if (!poll) return new CommandResponse('No poll with that name exists.')
         // toggle the allow_multiple flag between true and false
         poll.allow_multiple = !poll.allow_multiple
 
@@ -163,7 +163,7 @@ const PollCommand = {
       case 'remove':
         if (focused.name === 'option') {
           poll = interaction.client.polls.get(interaction.options.getString('title'), interaction.guild.id)
-          await interaction.respond(poll.options.map(option => ({ name: option, value: option })))
+          await interaction.respond(poll.options.all().map(option => ({ name: option, value: option })))
         } else if (focused.name === 'poll') {
           await interaction.respond(interaction.client.polls.unpublished(interaction.guild.id).map(poll => ({ name: poll.title, value: String(poll.id) })))
         }
@@ -180,9 +180,9 @@ const PollCommand = {
     }
   },
   async button (interaction, id) {
-    const poll = interaction.client.polls.get(interaction.message.id)
+    const poll = interaction.client.polls.get(interaction.message.id, interaction.guild.id)
     const err = poll.votes.add({ member: interaction.member.id, option: id[1] })
-    if (err !== null) return new CommandResponse(err)
+    if (err !== undefined) return new CommandResponse(err.message)
     poll.save()
     poll.update()
     interaction.reply({ content: `You have answered \`${id[1]}\` to the poll!`, ephemeral: true })
