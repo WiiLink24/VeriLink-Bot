@@ -59,7 +59,7 @@ export default class Poll {
    * Save the entire poll object in its current state to the database.
    */
   save () {
-    this.client.db.session.query('INSERT INTO polls ("id", "guild_id", "channel_id", "message_id", "title", "options", "votes", "is_published", "is_closed", "allow_multiple") VALUES ($1, $2, $3, $4, $5, $6::text[], $7::json, $8, $9, $10) ON CONFLICT (id) DO UPDATE SET options = excluded.options, channel_id = excluded.channel_id, message_id = excluded.message_id, votes = excluded.votes, is_published = excluded.is_published, is_closed = excluded.is_closed, allow_multiple = excluded.allow_multiple', [this.id, this.guild_id, this.channel_id, this.message_id, this.title, this.options, JSON.stringify(this.votes), this.is_published, this.is_closed, this.allow_multiple])
+    this.client.db.session.query('INSERT INTO polls ("id", "guild_id", "channel_id", "message_id", "title", "options", "votes", "is_published", "is_closed", "allow_multiple") VALUES ($1, $2, $3, $4, $5, $6::text[], $7::json, $8, $9, $10) ON CONFLICT (id) DO UPDATE SET options = excluded.options, channel_id = excluded.channel_id, message_id = excluded.message_id, votes = excluded.votes, is_published = excluded.is_published, is_closed = excluded.is_closed, allow_multiple = excluded.allow_multiple', [this.id, this.guild_id, this.channel_id, this.message_id, this.title, this.options.serialize(), JSON.stringify(this.votes.serialize()), this.is_published, this.is_closed, this.allow_multiple])
   }
 
   /**

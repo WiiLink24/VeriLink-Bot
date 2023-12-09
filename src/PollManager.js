@@ -4,6 +4,10 @@ export default class PollManager {
     this._polls = []
   }
 
+  set (polls) {
+    this._polls = polls
+  }
+
   add (poll) {
     this._polls.push(poll)
   }

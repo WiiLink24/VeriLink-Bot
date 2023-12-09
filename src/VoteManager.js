@@ -1,6 +1,11 @@
 export default class VoteManager {
   constructor (poll, votes) {
+    this._poll = poll
     this._votes = votes
+  }
+
+  serialize () {
+    return this._votes
   }
 
   all () {

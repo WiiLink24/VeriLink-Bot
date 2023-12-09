@@ -20,4 +20,8 @@ export default class PollOptions {
   has (option) {
     return this._options.includes(option)
   }
+
+  serialize () {
+    return this._options
+  }
 }

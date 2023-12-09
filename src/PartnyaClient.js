@@ -2,6 +2,7 @@ import Discord, { Client } from 'discord.js'
 import Database from './Database.js'
 import CommandManager from './CommandManager.js'
 import PollManager from './PollManager.js'
+import Poll from './Poll.js'
 
 export default class PartnyaClient extends Client {
   constructor (data) {
@@ -13,6 +14,8 @@ export default class PartnyaClient extends Client {
 
   async load () {
     await this.rest.put(Discord.Routes.applicationCommands(this.user.id), { body: this.commands.all().map((command) => command.data) })
+
+    this.polls.set((await this.db.session.query('SELECT * FROM polls')).rows)
   }
 
   GetPoll (id, guildId) {

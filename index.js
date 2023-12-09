@@ -13,8 +13,6 @@ client.on(Discord.Events.ClientReady, async _ => {
 
   // Load client data (Commands, Polls, etc)
   await client.load()
-  const polls = (await client.db.session.query('SELECT * FROM polls')).rows
-  client.polls = polls.map(poll => new Poll(client, poll))
 })
 
 client.on(Discord.Events.InteractionCreate, async interaction => {
