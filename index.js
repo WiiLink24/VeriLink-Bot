@@ -15,7 +15,7 @@ client.on(Discord.Events.ClientReady, async _ => {
 
 client.on(Discord.Events.InteractionCreate, async interaction => {
   let command
-  if (interaction.isCommand()) {
+  if (interaction.isCommand()) { // Handle slash commands
     command = client.commands.get(interaction.commandName)
     if (!command) return
 
@@ -25,7 +25,7 @@ client.on(Discord.Events.InteractionCreate, async interaction => {
       console.error(error)
       await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true })
     }
-  } else if (interaction.isAutocomplete()) {
+  } else if (interaction.isAutocomplete()) { // Handles responses for command auto completes
     command = client.commands.get(interaction.commandName)
     if (!command) return
 
@@ -34,18 +34,15 @@ client.on(Discord.Events.InteractionCreate, async interaction => {
     } catch (error) {
       console.error(error)
     }
-  } else if (interaction.isButton()) {
+  } else if (interaction.isButton()) { // Handles button input and forwards it to a command based on prefix
+    // Since buttons don't know about commands, we can use a name identifier
     const id = interaction.customId.split('_')
-    switch (id[0]) {
-      case 'vote':
-        command = client.commands.get('poll')
+    command = client.commands.get(id[0])
 
-        try {
-          await command.button(interaction, id)
-        } catch (error) {
-          Logger.error(error)
-        }
-        break
+    try {
+      await command.button(interaction, id)
+    } catch (error) {
+      Logger.error(error)
     }
   }
 })
