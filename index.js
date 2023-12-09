@@ -8,6 +8,8 @@ const flags = process.argv.length > 2 ? process.argv[2] : ''
 const client = new PartnyaClient({ intents: [Discord.IntentsBitField.Flags.Guilds] })
 
 client.on(Discord.Events.ClientReady, async _ => {
+  // Load client data (Commands, Polls, etc)
+  await client.load()
   Logger.info(`Client logged in as user: ${client.user.tag}!`)
 })
 
@@ -48,15 +50,13 @@ client.on(Discord.Events.InteractionCreate, async interaction => {
   }
 })
 
-// Load client data (Commands, Polls, etc)
-await client.load()
 await client.db.Connect()
 
 if (flags === '-migrate') {
   Logger.info('Starting database migration...')
   // Import and migration the database
   await client.db.Migrate()
-
+  Logger.info('Database migration has completed.')
   process.exit() // Exit once migration is complete
 } else {
   await client.login(config.token)

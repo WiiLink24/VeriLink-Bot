@@ -3,6 +3,7 @@ import Database from './Database.js'
 import CommandManager from './CommandManager.js'
 import PollManager from './PollManager.js'
 import Poll from './Poll.js'
+import { Logger } from './Logger.js'
 
 export default class PartnyaClient extends Client {
   constructor (data) {
@@ -13,12 +14,10 @@ export default class PartnyaClient extends Client {
   }
 
   async load () {
+    Logger.info('Loading PartnyaClient')
+    Logger.info('Initalizing commands')
     await this.rest.put(Discord.Routes.applicationCommands(this.user.id), { body: this.commands.all().map((command) => command.data) })
-
+    Logger.info('Restoring polls from database')
     this.polls.set((await this.db.session.query('SELECT * FROM polls')).rows.map(poll => new Poll(this, poll)))
-  }
-
-  GetPoll (id, guildId) {
-    return this.polls.filter(poll => poll.guild_id === guildId).find(poll => String(poll.id) === String(id))
   }
 }
