@@ -9,9 +9,6 @@ const client = new PartnyaClient({ intents: [Discord.IntentsBitField.Flags.Guild
 
 client.on(Discord.Events.ClientReady, async _ => {
   Logger.info(`Client logged in as user: ${client.user.tag}!`)
-
-  // Load client data (Commands, Polls, etc)
-  await client.load()
 })
 
 client.on(Discord.Events.InteractionCreate, async interaction => {
@@ -51,6 +48,8 @@ client.on(Discord.Events.InteractionCreate, async interaction => {
   }
 })
 
+// Load client data (Commands, Polls, etc)
+await client.load()
 await client.db.Connect()
 
 if (flags === '-migrate') {
@@ -60,5 +59,5 @@ if (flags === '-migrate') {
 
   process.exit() // Exit once migration is complete
 } else {
-  client.login(config.token)
+  await client.login(config.token)
 }
