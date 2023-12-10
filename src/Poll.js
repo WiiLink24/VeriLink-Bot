@@ -1,4 +1,6 @@
 import { EmbedBuilder } from 'discord.js'
+import PollOptions from './PollOptions.js'
+import VoteManager from './VoteManager.js'
 
 export default class Poll {
   client = null
@@ -7,19 +9,17 @@ export default class Poll {
   channel_id = ''
   message_id = ''
   title = ''
-  options = []
-  votes = []
+  options = new PollOptions([])
+  votes = new VoteManager(this, [])
   is_published = false
   is_closed = false
   allow_multiple = false
 
   constructor (client, data) {
     this.client = client
+    data.options = new PollOptions(Array.isArray(data.options) ? data.options : [])
+    data.votes = new VoteManager(this, Array.isArray(data.votes) ? data.votes : [])
     Object.assign(this, data)
-
-    if (!Array.isArray(this.votes)) {
-      this.votes = []
-    }
   }
 
   get guild () {
@@ -34,85 +34,39 @@ export default class Poll {
     return this.channel.messages.cache.get(this.message_id)
   }
 
-  Vote (member, option) {
-    // Only allow a single vote, this will instead see if there's multiple on the same option if multiple is allowed.
-    const vote = this.GetVote(member)
-    if (vote) {
-      if (vote.option === option) return new Error('You have already voted for this option.')
-      if (!this.allow_multiple) {
-        vote.option = option
-        this.Save()
-        return
-      }
-    }
-
-    this.ApplyVote(member, option)
-    this.Save()
-  }
-
-  UpdateEmbed () {
-    this.message.edit({ embeds: [this.Prepare()] })
-  }
-
-  Save () {
-    this.client.db.session.query('INSERT INTO polls ("id", "guild_id", "channel_id", "message_id", "title", "options", "votes", "is_published", "is_closed", "allow_multiple") VALUES ($1, $2, $3, $4, $5, $6::text[], $7::json, $8, $9, $10) ON CONFLICT (id) DO UPDATE SET options = excluded.options, channel_id = excluded.channel_id, message_id = excluded.message_id, votes = excluded.votes, is_published = excluded.is_published, is_closed = excluded.is_closed, allow_multiple = excluded.allow_multiple', [this.id, this.guild_id, this.channel_id, this.message_id, this.title, this.options, JSON.stringify(this.votes), this.is_published, this.is_closed, this.allow_multiple])
-  }
-
-  Remove () {
-    this.client.db.session.query('DELETE FROM polls WHERE id = $1', [this.id])
-  }
-
-  Close () {
-    this.is_closed = true
-    this.UpdateEmbed()
-    this.message.edit({ components: [] })
-  }
-
-  AddOption (option) {
-    if (this.HasOption(option)) {
-      return new Error('An option with this name already exists')
-    }
-
-    this.options.push(option)
-  }
-
-  RemoveOption (option) {
-    if (!this.HasOption(option)) {
-      return new Error('There is no option with that name')
-    }
-
-    this.options.splice(this.options.findIndex(opt => opt === option), 1)
-  }
-
-  HasOption (option) {
-    return this.options.find(opt => opt === option) != null
-  }
-
-  ApplyVote (member, option) {
-    this.votes.push({ member, option })
-  }
-
-  GetVote (member) {
-    return this.votes.find(vote => {
-      return vote.member === member
-    })
-  }
-
-  GetVotes (option) {
-    return this.votes.filter(vote => vote.option === option).length
-  }
-
-  Prepare () {
+  get embed () {
     const embed = new EmbedBuilder()
     embed.setTitle(this.title)
-    this.options.forEach((option, index) => embed.addFields({ name: option, value: `${this.GetVotes(option)} ${this.GetVotes(option) === 1 ? 'vote' : 'votes'}` }))
+    embed.addFields(this.options.all().map(option => ({ name: option, value: `${this.votes.total(option)} ${this.votes.total(option) === 1 ? 'vote' : 'votes'}` })))
     embed.setTimestamp()
 
     // Change the title to show closed if the poll is closed
-    if (this.is_closed) {
-      embed.setTitle(`(Closed) ${this.title}`)
-    }
+    if (this.is_closed) embed.setTitle(`(Closed) ${this.title}`)
 
     return embed.data
+  }
+
+  update () {
+    this.message.edit(Object.assign({ embeds: [this.embed] }, { components: !this.is_closed ? this.message.components : [] }))
+  }
+
+  close () {
+    this.is_closed = true
+  }
+
+  /// Database tasks
+  /**
+   * Save the entire poll object in its current state to the database.
+   */
+  save () {
+    this.client.db.session.query('INSERT INTO polls ("id", "guild_id", "channel_id", "message_id", "title", "options", "votes", "is_published", "is_closed", "allow_multiple") VALUES ($1, $2, $3, $4, $5, $6::text[], $7::json, $8, $9, $10) ON CONFLICT (id) DO UPDATE SET options = excluded.options, channel_id = excluded.channel_id, message_id = excluded.message_id, votes = excluded.votes, is_published = excluded.is_published, is_closed = excluded.is_closed, allow_multiple = excluded.allow_multiple', [this.id, this.guild_id, this.channel_id, this.message_id, this.title, this.options.serialize(), JSON.stringify(this.votes.serialize()), this.is_published, this.is_closed, this.allow_multiple])
+  }
+
+  /**
+   * Remove the object from the database and close the poll.
+   */
+  remove () {
+    this.close()
+    this.client.db.session.query('DELETE FROM polls WHERE id = $1', [this.id])
   }
 }

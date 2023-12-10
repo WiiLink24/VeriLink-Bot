@@ -3,122 +3,135 @@ import assert from 'assert'
 import Poll from '../src/Poll.js'
 import fs from 'node:fs'
 import Database from '../src/Database.js'
-
-const id = new Date().getTime()
+import PartnyaClient from '../src/PartnyaClient.js'
+import { IntentsBitField } from 'discord.js'
 
 const sampleData = {
-  id,
+  guild_id: '123',
   title: 'Test Title'
 }
 
-describe('Polls', function () {
-  let database = null
-  if (fs.existsSync('./config/config.json')) {
-    database = new Database()
-    database.Connect()
-    this.timeout(200)
-  }
-  describe('unpublished', () => {
-    const poll = (new Poll(null, sampleData))
-    it('should have the title \'Test Title\'', () => {
-      assert.equal(poll.title, 'Test Title')
-    })
-    it('should not have a channel_id', () => {
-      assert.equal(poll.channel_id, '')
-    })
-    it('should not have a message_id', () => {
-      assert.equal(poll.message_id, '')
-    })
-    it('should not be published', () => {
-      assert.equal(poll.is_published, false)
-    })
-    it('ID should not equal 0', () => {
-      assert.notEqual(poll.id, 0)
-    })
-  })
-  describe('published', () => {
-    const poll = (new Poll(null, sampleData))
-    poll.channel_id = '123'
-    poll.message_id = '123'
-    poll.is_published = true
-    it('should have channel_id', () => {
-      assert.notEqual(poll.channel_id, '')
-    })
-    it('should have message_id', () => {
-      assert.notEqual(poll.message_id, '')
-    })
-    it('should be published', () => {
-      assert.equal(poll.is_published, true)
-    })
-  })
-  describe('#AddOption', () => {
-    const poll = (new Poll(null, sampleData))
-    const err = poll.AddOption('Test')
-    it('should not return a value', () => {
-      assert.equal(err, null)
-    })
-    it('length of options should be 1', () => {
-      assert.equal(poll.options.length, 1)
-    })
-    it('first value in options should be \'Test\'', () => {
-      assert.equal(poll.options[0], 'Test')
-    })
-  })
-  describe('#Save', () => {
-    it('database should contain testing ID', async function () {
-      if (!database) {
-        return this.skip()
-      }
-      const poll = (new Poll(null, sampleData))
-      poll.client = { db: database }
-      poll.Save()
-      const value = (await poll.client.db.session.query('SELECT * FROM polls WHERE id = $1', [poll.id])).rows
-      assert.notEqual(value.length, 0)
-    })
-  })
-  describe('#Vote', function () {
-    if (!fs.existsSync('./config/config.json')) return
+describe('PollManager', function () {
+  const client = new PartnyaClient({ intents: [IntentsBitField.Flags.Guilds] })
 
-    const poll = (new Poll({ db: database }, sampleData))
-    it('length of votes should be 1', function () {
-      if (!database) {
-        return this.skip()
-      }
-      poll.Vote('123', 'Test')
-      assert.equal(poll.votes.length, 1)
+  client.polls.add(new Poll(client, sampleData))
+  client.polls.add(new Poll(client, Object.assign(sampleData, { guild_id: '124' })))
+
+  describe('#unpublished', function () {
+    const polls = client.polls.unpublished('123')
+    it('should have an array length of 1', function () {
+      assert.equal(polls.length, 1)
     })
-    it('should have a vote with the option of \'Test\'', function () {
-      if (!database) {
-        return this.skip()
-      }
-      assert.notEqual(poll.votes.find((vote) => vote.option === 'Test'), null)
+    it('first poll should belong to guild \'123\'', function () {
+      assert.equal(polls[0].guild_id, '123')
     })
-    it('should change vote to option of \'Test 2\'', function () {
-      if (!database) {
-        return this.skip()
-      }
-      poll.Vote('123', 'Test 2')
-      assert.equal(poll.votes.length === 1 && poll.votes.find((vote) => vote.option === 'Test 2') != null, true)
+    it('first poll should have the title of \'Test Title\'', function () {
+      assert.equal(polls[0].title, 'Test Title')
     })
-    it('should allow multiple responses in multiresponse mode', function () {
-      if (!database) {
-        return this.skip()
-      }
-      poll.allow_multiple = true
-      poll.Vote('123', 'Test')
-      assert.equal(poll.votes.length, 2)
+    it('first poll should not have a channel_id', function () {
+      assert.equal(polls[0].channel_id, '')
+    })
+    it('first poll should not have a message_id', function () {
+      assert.equal(polls[0].message_id, '')
+    })
+    it('first poll should not be published', function () {
+      assert.equal(polls[0].is_published, false)
+    })
+    it('first poll ID should not equal 0', function () {
+      assert.notEqual(polls[0].id, 0)
     })
   })
-  describe('#Remove', function () {
-    it('properly delete database entries', async function () {
-      if (!database) {
-        return this.skip()
-      }
-      const poll = (new Poll(null, sampleData))
-      poll.client = { db: database }
-      poll.Remove()
-      const value = (await poll.client.db.session.query('SELECT * FROM polls WHERE id = $1', [poll.id])).rows
-      assert.equal(value.length, 0)
+
+  client.polls.get('Test Title', '124').is_published = true
+
+  describe('#published', () => {
+    const polls = client.polls.published('124')
+    polls[0].channel_id = '123'
+    polls[0].message_id = '123'
+    // Attempt to test duplicating options
+    polls[0].options.add('Test')
+    polls[0].options.add('Test')
+    it('should have an array length of 1', function () {
+      assert.equal(polls.length, 1)
+    })
+    it('should have a channel_id of \'123\'', function () {
+      assert.equal(polls[0].channel_id, '123')
+    })
+    it('should have a message_id of \'123\'', function () {
+      assert.equal(polls[0].message_id, '123')
+    })
+    it('should have at least 1 option', function () {
+      assert.equal(polls[0].options.all().length, 1)
+    })
+    it('first option should be \'Test\'', function () {
+      assert.equal(polls[0].options.all()[0], 'Test')
+    })
+    it('should be published', function () {
+      assert.equal(polls[0].is_published, true)
+    })
+  })
+
+  describe('#get', function () {
+    const pollTitle = client.polls.get('Test Title', '123')
+    const pollId = client.polls.get(client.polls.all('123')[0].id, '123')
+
+    it('should be able to get poll using the title', function () {
+      assert.notEqual(pollTitle, null)
+    })
+    it('should be able to get poll using the ID', function () {
+      assert.notEqual(pollId, null)
+    })
+    const pollWrong = client.polls.get('Test Title', '128')
+    it('using the wrong guild ID should not yield results', function () {
+      assert.equal(pollWrong, null)
+    })
+  })
+
+  client.polls.add(new Poll(client, Object.assign(sampleData, { title: 'Tester', guild_id: '123' })))
+  client.polls.add(new Poll(client, Object.assign(sampleData, { title: 'Tester 2', guild_id: '124' })))
+
+  describe('#add', function () {
+    it('should have an array length of 2', function () {
+      assert.equal(client.polls.all('123').length, 2)
+    })
+
+    it('should have a poll with the title of \'Tester\'', function () {
+      assert.notEqual(client.polls.get('Tester', '123'), null)
+    })
+  })
+
+  client.polls.remove('Tester 2')
+
+  describe('#remove', function () {
+    it('should have an array length of 1', function () {
+      assert.equal(client.polls.all('124').length, 1)
+    })
+
+    it('should not have a poll with the title of \'Tester 2\'', function () {
+      assert.equal(client.polls.get('Tester 2', '124'), null)
+    })
+  })
+})
+
+describe('Poll', function () {
+  const poll = new Poll(null, sampleData)
+
+  describe('#embed', function () {
+    const embed = poll.embed
+
+    it('should have an identical title to original object', function () {
+      assert.equal(embed.title, poll.title)
+    })
+
+    it('should have have no fields', function () {
+      assert.equal(embed.fields.length, 0)
+    })
+  })
+
+  describe('#close', function () {
+    poll.close()
+    it('should set is_closed to \'true\'', function () {
+      assert.equal(poll.is_closed, true)
     })
   })
 })
