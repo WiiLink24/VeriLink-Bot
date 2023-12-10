@@ -1,6 +1,7 @@
 import Poll from '../src/Poll.js'
 import { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder } from 'discord.js'
 import CommandResponse from '../src/CommandResponse.js'
+import Vote from '../src/Vote.js'
 
 const PollCommand = {
   data: new SlashCommandBuilder()
@@ -182,7 +183,7 @@ const PollCommand = {
   },
   async button (interaction, id) {
     const poll = interaction.client.polls.get(interaction.message.id, interaction.guild.id)
-    const err = poll.votes.add({ member: interaction.member.id, option: id[1] })
+    const err = poll.votes.add(new Vote(interaction.member.id, id[1]))
     if (err !== undefined) return new CommandResponse(err.message)
     poll.save()
     poll.update()
