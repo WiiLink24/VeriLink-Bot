@@ -13,12 +13,6 @@ const sampleData = {
 
 describe('PollManager', function () {
   const client = new PartnyaClient({ intents: [IntentsBitField.Flags.Guilds] })
-  client.db = null
-  if (fs.existsSync('./config/config.json')) {
-    client.db = new Database()
-    client.db.Connect()
-    this.timeout(200)
-  }
 
   client.polls.add(new Poll(client, sampleData))
   client.polls.add(new Poll(client, Object.assign(sampleData, { guild_id: '124' })))
@@ -121,6 +115,18 @@ describe('PollManager', function () {
 
 describe('Poll', function () {
   const poll = new Poll(null, sampleData)
+
+  describe('#embed', function () {
+    const embed = poll.embed
+
+    it('should have an identical title to original object', function () {
+      assert.equal(embed.title, poll.title)
+    })
+
+    it('should have have no fields', function () {
+      assert.equal(embed.fields.length, 0)
+    })
+  })
 
   describe('#close', function () {
     poll.close()
