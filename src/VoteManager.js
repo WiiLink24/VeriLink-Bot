@@ -29,7 +29,7 @@ export default class VoteManager {
   /**
    * Insert a new vote for this poll by a user.
    * @param vote
-   * @returns {Error|void}
+   * @returns {void}
    */
   add (vote) {
     if (this.hasAny(vote) && !this._poll.allow_multiple) return this.replace(vote)
