@@ -42,7 +42,7 @@ client.on(Discord.Events.InteractionCreate, async interaction => {
         command = client.commands.get('poll')
 
         try {
-          await command.button(interaction, id)
+          await interaction.reply((await command.button(interaction, id)).data)
         } catch (error) {
           Logger.error(error)
         }

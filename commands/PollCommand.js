@@ -185,7 +185,7 @@ const PollCommand = {
     if (err !== undefined) return new CommandResponse(err.message)
     poll.save()
     poll.update()
-    interaction.reply({ content: `You have answered \`${id[1]}\` to the poll!`, ephemeral: true })
+    return new CommandResponse(`You have answered \`${id[1]}\` to the poll!`)
   }
 }
 
