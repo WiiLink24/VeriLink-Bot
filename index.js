@@ -37,16 +37,11 @@ client.on(Discord.Events.InteractionCreate, async interaction => {
   } else if (interaction.isButton()) { // Handles button input and forwards it to a command based on prefix
     // Since buttons don't know about commands, we can use a name identifer
     const id = interaction.customId.split('_')
-    switch (id[0]) {
-      case 'vote':
-        command = client.commands.get('poll')
-
-        try {
-          await interaction.reply((await command.button(interaction, id)).data)
-        } catch (error) {
-          Logger.error(error)
-        }
-        break
+    command = client.commands.get(id[0])
+    try {
+      await interaction.reply((await command.button(interaction, id)).data)
+    } catch (error) {
+      Logger.error(error)
     }
   }
 })

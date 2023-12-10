@@ -104,7 +104,7 @@ const PollCommand = {
         if (!poll) return new CommandResponse('No poll with that name exists.')
         // prefetch messages for deletion, this is specifically an issue since the cache doesn't persist restarts.
         await poll.channel.messages.fetch(poll.message_id)
-        interaction.client.polls.splice(interaction.client.polls.indexOf(poll), 1)
+        interaction.client.polls.remove(poll.title)
 
         poll.remove()
         poll.update()
@@ -142,7 +142,7 @@ const PollCommand = {
       case 'remove': // /poll option remove <title> <option>
         if (!poll) return new CommandResponse('No poll with that name exists.')
         // if an error occurs whilst adding an option, list the error.
-        if ((err = poll.options.remove(interaction.options.getString('option'))) !== null) return new CommandResponse(err)
+        if ((err = poll.options.remove(interaction.options.getString('option'))) !== undefined) return new CommandResponse(err.message)
 
         poll.save()
         return new CommandResponse(`Poll option \`${interaction.options.getString('option')}\` has been removed from the poll.`)
@@ -163,8 +163,9 @@ const PollCommand = {
       case 'remove':
         if (focused.name === 'option') {
           poll = interaction.client.polls.get(interaction.options.getString('title'), interaction.guild.id)
+          if (!poll) return interaction.respond([])
           await interaction.respond(poll.options.all().map(option => ({ name: option, value: option })))
-        } else if (focused.name === 'poll') {
+        } else if (focused.name === 'title') {
           await interaction.respond(interaction.client.polls.unpublished(interaction.guild.id).map(poll => ({ name: poll.title, value: String(poll.id) })))
         }
         break
