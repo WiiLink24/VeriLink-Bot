@@ -32,7 +32,6 @@ export default class VoteManager {
    * @returns {Error|void}
    */
   add (vote) {
-    if (this.has(vote)) return this.remove(vote)
     if (this.hasAny(vote) && !this._poll.allow_multiple) return this.replace(vote)
     this._votes.push(vote)
   }

@@ -183,8 +183,14 @@ const PollCommand = {
   },
   async button (interaction, id) {
     const poll = interaction.client.polls.get(interaction.message.id, interaction.guild.id)
-    const err = poll.votes.add(new Vote(interaction.member.id, id[1]))
-    if (err !== undefined) return new CommandResponse(err.message)
+    const vote = new Vote(interaction.member.id, id[1])
+
+    if (poll.votes.has(vote)) {
+      poll.votes.remove(vote)
+      return new CommandResponse(`You have removed your poll response from \`${id[1]}\`.`)
+    }
+    poll.votes.add(vote)
+
     poll.save()
     poll.update()
     return new CommandResponse(`You have answered \`${id[1]}\` to the poll!`)
