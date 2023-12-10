@@ -187,6 +187,8 @@ const PollCommand = {
 
     if (poll.votes.has(vote)) {
       poll.votes.remove(vote)
+      poll.save()
+      poll.update()
       return new CommandResponse(`You have removed your poll response from \`${id[1]}\`.`)
     }
     poll.votes.add(vote)
