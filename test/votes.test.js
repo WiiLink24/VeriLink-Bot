@@ -10,17 +10,6 @@ const sampleData = {
   title: 'Test Title'
 }
 
-const sampleData2 = {
-  guild_id: '123',
-  title: 'Test Title',
-  votes: [
-    {
-      member: '123',
-      option: '123'
-    }
-  ]
-}
-
 describe('VoteManager', function () {
   const client = new PartnyaClient({ intents: [IntentsBitField.Flags.Guilds] })
 
@@ -104,6 +93,20 @@ describe('VoteManager', function () {
 
     it('should be false for user \'124\'', function () {
       assert.equal(poll.votes.hasAny(new Vote('124', '123')), false)
+    })
+  })
+
+  describe('#total', function () {
+    const poll = new Poll(client, sampleData)
+    poll.votes.add(new Vote('123', '123'))
+    poll.votes.add(new Vote('124', '123'))
+
+    it('should return 2 for the option \'123\'', function () {
+      assert.equal(poll.votes.total('123'), 2)
+    })
+
+    it('should return 0 for the option \'124\'', function () {
+      assert.equal(poll.votes.total('124'), 0)
     })
   })
 })
