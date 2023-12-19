@@ -96,8 +96,10 @@ const PollCommand = {
     switch (subcommand) {
       case 'create': // /poll create <title>
         if (poll) return new CommandResponse('There\'s already a poll with that name.')
-        poll = new Poll(interaction.client, { title: interaction.options.getString('title'), guild_id: interaction.channel.guild.id })
+        poll = new Poll(interaction.client, { title: interaction.options.getString('title'), guild_id: interaction.guild.id })
         interaction.client.polls.add(poll)
+        console.log(poll)
+        console.log(interaction.client.polls)
 
         poll.save()
         return new CommandResponse('Your poll has been created. It will not be shown until you publish it.')
