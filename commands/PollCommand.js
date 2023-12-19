@@ -46,6 +46,22 @@ const PollCommand = {
             .setAutocomplete(true)
             .setRequired(true)
             .setDescription('The title of the poll')))
+    .addSubcommand(subcommand =>
+      subcommand
+        .setName('title')
+        .setDescription('Close a poll')
+        .addStringOption(option =>
+          option
+            .setName('title')
+            .setAutocomplete(true)
+            .setRequired(true)
+            .setDescription('The title of the poll'))
+        .addStringOption(option =>
+          option
+            .setName('new-title')
+            .setAutocomplete(true)
+            .setRequired(true)
+            .setDescription('The new title of the poll')))
     .addSubcommandGroup(subcommandGroup =>
       subcommandGroup.setName('options')
         .setDescription('Manage subcommand options')
@@ -153,6 +169,16 @@ const PollCommand = {
         poll.allow_multiple = !poll.allow_multiple
 
         return new CommandResponse(poll.allow_multiple ? 'Users can now submit multiple responses to this poll.' : 'Users can now only submit one response to this poll.')
+      case 'title': // /poll title <title> <new-title>
+        if (!poll) return new CommandResponse('No poll with that name exists.')
+        poll.title = interaction.options.getString('new-title')
+
+        return new CommandResponse(`The title of the poll \`${interaction.options.getString('title')}\` has been changed to \`${interaction.options.getString('new-title')}\`.`)
+      case 'description': // /poll description <title> <description>
+        if (!poll) return new CommandResponse('No poll with that name exists.')
+        poll.title = interaction.options.getString('new-title')
+
+        return new CommandResponse(`The title of the poll \`${interaction.options.getString('title')}\` has been changed to \`${interaction.options.getString('new-title')}\`.`)
     }
   },
   async autocomplete (interaction) {
@@ -177,6 +203,8 @@ const PollCommand = {
       case 'add':
       case 'multiple':
       case 'publish':
+      case 'title':
+      case 'description':
         await interaction.respond(interaction.client.polls.unpublished(interaction.guild.id).map(poll => ({ name: poll.title, value: String(poll.id) })))
         break
     }
