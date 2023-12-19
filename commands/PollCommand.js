@@ -59,7 +59,6 @@ const PollCommand = {
         .addStringOption(option =>
           option
             .setName('new-title')
-            .setAutocomplete(true)
             .setRequired(true)
             .setDescription('The new title of the poll')))
     .addSubcommandGroup(subcommandGroup =>
