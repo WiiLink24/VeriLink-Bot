@@ -168,17 +168,20 @@ const PollCommand = {
         // toggle the allow_multiple flag between true and false
         poll.allow_multiple = !poll.allow_multiple
 
+        poll.save()
         return new CommandResponse(poll.allow_multiple ? 'Users can now submit multiple responses to this poll.' : 'Users can now only submit one response to this poll.')
       case 'title': // /poll title <title> <new-title>
         if (!poll) return new CommandResponse('No poll with that name exists.')
         poll.title = interaction.options.getString('new-title')
 
-        return new CommandResponse(`The title of the poll \`${interaction.options.getString('title')}\` has been changed to \`${interaction.options.getString('new-title')}\`.`)
+        poll.save()
+        return new CommandResponse(`The title of the poll has been changed to \`${interaction.options.getString('new-title')}\`.`)
       case 'description': // /poll description <title> <description>
         if (!poll) return new CommandResponse('No poll with that name exists.')
         poll.title = interaction.options.getString('new-title')
 
-        return new CommandResponse(`The title of the poll \`${interaction.options.getString('title')}\` has been changed to \`${interaction.options.getString('new-title')}\`.`)
+        poll.save()
+        return new CommandResponse(`The title of the poll has been changed to \`${interaction.options.getString('new-title')}\`.`)
     }
   },
   async autocomplete (interaction) {
