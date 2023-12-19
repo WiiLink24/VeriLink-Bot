@@ -38,6 +38,16 @@ const PollCommand = {
             .setDescription('The title of the poll')))
     .addSubcommand(subcommand =>
       subcommand
+        .setName('delete')
+        .setDescription('Delete a poll.')
+        .addStringOption(option =>
+          option
+            .setName('title')
+            .setAutocomplete(true)
+            .setRequired(true)
+            .setDescription('The title of the poll')))
+    .addSubcommand(subcommand =>
+      subcommand
         .setName('close')
         .setDescription('Close a poll')
         .addStringOption(option =>
@@ -46,6 +56,36 @@ const PollCommand = {
             .setAutocomplete(true)
             .setRequired(true)
             .setDescription('The title of the poll')))
+    .addSubcommand(subcommand =>
+      subcommand
+        .setName('title')
+        .setDescription('Change the title of a poll.')
+        .addStringOption(option =>
+          option
+            .setName('title')
+            .setAutocomplete(true)
+            .setRequired(true)
+            .setDescription('The title of the poll'))
+        .addStringOption(option =>
+          option
+            .setName('new-title')
+            .setRequired(true)
+            .setDescription('The new title of the poll')))
+    .addSubcommand(subcommand =>
+      subcommand
+        .setName('description')
+        .setDescription('Change the description of a poll.')
+        .addStringOption(option =>
+          option
+            .setName('title')
+            .setAutocomplete(true)
+            .setRequired(true)
+            .setDescription('The title of the poll'))
+        .addStringOption(option =>
+          option
+            .setName('description')
+            .setRequired(true)
+            .setDescription('The new description of the poll')))
     .addSubcommandGroup(subcommandGroup =>
       subcommandGroup.setName('options')
         .setDescription('Manage subcommand options')
@@ -113,6 +153,7 @@ const PollCommand = {
       case 'publish': // /poll publish <title>
         if (!poll) return new CommandResponse('No poll with that name exists.')
         if (poll.is_published) return new CommandResponse('That poll is already published!')
+        if (poll.options.all().length === 0) return new CommandResponse('You cannot publish an empty poll.')
         actionRow = new ActionRowBuilder().addComponents(poll.options.all().map(option => new ButtonBuilder().setCustomId(`poll_${option}`).setLabel(option).setStyle(1)))
         poll.message_id = (await interaction.channel.send({ embeds: [poll.embed], components: [actionRow] })).id
         poll.channel_id = interaction.channel.id
@@ -133,6 +174,12 @@ const PollCommand = {
 
         poll.save()
         return new CommandResponse('Your poll has been unpublished, and the embed removed.')
+      case 'delete': // /poll publish <title>
+        if (!poll) return new CommandResponse('No poll with that name exists.')
+        interaction.client.polls.remove(poll.title)
+
+        poll.remove()
+        return new CommandResponse('Your poll has been deleted.')
       case 'add': // /poll option add <title> <option>
         if (!poll) return new CommandResponse('No poll with that name exists.')
         // if an error occurs whilst adding an option, list the error.
@@ -152,7 +199,20 @@ const PollCommand = {
         // toggle the allow_multiple flag between true and false
         poll.allow_multiple = !poll.allow_multiple
 
+        poll.save()
         return new CommandResponse(poll.allow_multiple ? 'Users can now submit multiple responses to this poll.' : 'Users can now only submit one response to this poll.')
+      case 'title': // /poll title <title> <new-title>
+        if (!poll) return new CommandResponse('No poll with that name exists.')
+        poll.title = interaction.options.getString('new-title')
+
+        poll.save()
+        return new CommandResponse(`The title of the poll has been changed to \`${interaction.options.getString('new-title')}\`.`)
+      case 'description': // /poll description <title> <description>
+        if (!poll) return new CommandResponse('No poll with that name exists.')
+        poll.description = interaction.options.getString('description')
+
+        poll.save()
+        return new CommandResponse(`The description of the poll has been changed to \`${interaction.options.getString('description')}\`.`)
     }
   },
   async autocomplete (interaction) {
@@ -174,9 +234,12 @@ const PollCommand = {
       case 'unpublish':
         await interaction.respond(interaction.client.polls.published(interaction.guild.id).map(poll => ({ name: poll.title, value: String(poll.id) })))
         break
+      case 'delete':
       case 'add':
       case 'multiple':
       case 'publish':
+      case 'title':
+      case 'description':
         await interaction.respond(interaction.client.polls.unpublished(interaction.guild.id).map(poll => ({ name: poll.title, value: String(poll.id) })))
         break
     }
