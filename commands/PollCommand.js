@@ -143,6 +143,7 @@ const PollCommand = {
       case 'publish': // /poll publish <title>
         if (!poll) return new CommandResponse('No poll with that name exists.')
         if (poll.is_published) return new CommandResponse('That poll is already published!')
+        if (poll.options.all().length === 0) return new CommandResponse('You cannot publish an empty poll.')
         actionRow = new ActionRowBuilder().addComponents(poll.options.all().map(option => new ButtonBuilder().setCustomId(`poll_${option}`).setLabel(option).setStyle(1)))
         poll.message_id = (await interaction.channel.send({ embeds: [poll.embed], components: [actionRow] })).id
         poll.channel_id = interaction.channel.id
