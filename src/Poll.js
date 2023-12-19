@@ -4,7 +4,7 @@ import VoteManager from './VoteManager.js'
 
 export default class Poll {
   client = null
-  id = new Date().getTime()
+  id = new Date().getTime().toString()
   guild_id = ''
   channel_id = ''
   message_id = ''
