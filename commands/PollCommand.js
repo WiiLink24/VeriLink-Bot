@@ -49,7 +49,7 @@ const PollCommand = {
     .addSubcommand(subcommand =>
       subcommand
         .setName('title')
-        .setDescription('Close a poll')
+        .setDescription('Change the title of a poll.')
         .addStringOption(option =>
           option
             .setName('title')
@@ -61,6 +61,21 @@ const PollCommand = {
             .setName('new-title')
             .setRequired(true)
             .setDescription('The new title of the poll')))
+    .addSubcommand(subcommand =>
+      subcommand
+        .setName('description')
+        .setDescription('Change the description of a poll.')
+        .addStringOption(option =>
+          option
+            .setName('title')
+            .setAutocomplete(true)
+            .setRequired(true)
+            .setDescription('The title of the poll'))
+        .addStringOption(option =>
+          option
+            .setName('description')
+            .setRequired(true)
+            .setDescription('The new description of the poll')))
     .addSubcommandGroup(subcommandGroup =>
       subcommandGroup.setName('options')
         .setDescription('Manage subcommand options')
@@ -177,10 +192,10 @@ const PollCommand = {
         return new CommandResponse(`The title of the poll has been changed to \`${interaction.options.getString('new-title')}\`.`)
       case 'description': // /poll description <title> <description>
         if (!poll) return new CommandResponse('No poll with that name exists.')
-        poll.title = interaction.options.getString('new-title')
+        poll.description = interaction.options.getString('description')
 
         poll.save()
-        return new CommandResponse(`The title of the poll has been changed to \`${interaction.options.getString('new-title')}\`.`)
+        return new CommandResponse(`The description of the poll has been changed to \`${interaction.options.getString('description')}\`.`)
     }
   },
   async autocomplete (interaction) {
