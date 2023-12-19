@@ -38,6 +38,16 @@ const PollCommand = {
             .setDescription('The title of the poll')))
     .addSubcommand(subcommand =>
       subcommand
+        .setName('delete')
+        .setDescription('Delete a poll.')
+        .addStringOption(option =>
+          option
+            .setName('title')
+            .setAutocomplete(true)
+            .setRequired(true)
+            .setDescription('The title of the poll')))
+    .addSubcommand(subcommand =>
+      subcommand
         .setName('close')
         .setDescription('Close a poll')
         .addStringOption(option =>
@@ -164,6 +174,12 @@ const PollCommand = {
 
         poll.save()
         return new CommandResponse('Your poll has been unpublished, and the embed removed.')
+      case 'delete': // /poll publish <title>
+        if (!poll) return new CommandResponse('No poll with that name exists.')
+        interaction.client.polls.remove(poll.title)
+
+        poll.remove()
+        return new CommandResponse('Your poll has been deleted.')
       case 'add': // /poll option add <title> <option>
         if (!poll) return new CommandResponse('No poll with that name exists.')
         // if an error occurs whilst adding an option, list the error.
@@ -218,6 +234,7 @@ const PollCommand = {
       case 'unpublish':
         await interaction.respond(interaction.client.polls.published(interaction.guild.id).map(poll => ({ name: poll.title, value: String(poll.id) })))
         break
+      case 'delete':
       case 'add':
       case 'multiple':
       case 'publish':
