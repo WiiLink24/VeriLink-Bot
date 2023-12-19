@@ -38,7 +38,7 @@ export default class Poll {
   get embed () {
     const embed = new EmbedBuilder()
     embed.setTitle(this.title)
-    embed.setDescription(this.description)
+    if (this.description !== '') embed.setDescription(this.description)
     embed.addFields(this.options.all().map(option => ({ name: option, value: `${this.votes.total(option)} ${this.votes.total(option) === 1 ? 'vote' : 'votes'}` })))
     embed.setTimestamp()
 
