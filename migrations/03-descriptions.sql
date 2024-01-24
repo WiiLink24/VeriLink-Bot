@@ -1,5 +1,0 @@
-BEGIN;
-
-ALTER TABLE polls ADD COLUMN IF NOT EXISTS description text;
-
-END;
