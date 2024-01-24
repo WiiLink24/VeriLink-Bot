@@ -3,11 +3,13 @@ import VeriLinkClient from './src/VeriLinkClient.js'
 import { Logger } from './src/Logger.js'
 import fs from 'node:fs'
 import express from 'express'
+import WebHost from './src/WebHost/WebHost.js'
 
 const config = JSON.parse(String(fs.readFileSync('./config/config.json')))
 const flags = process.argv.length > 2 ? process.argv[2] : ''
 const client = new VeriLinkClient({ intents: [Discord.IntentsBitField.Flags.Guilds] })
 const app = express()
+const webHost = new WebHost(client, app)
 
 client.on(Discord.Events.ClientReady, async _ => {
   // Load client data
@@ -57,8 +59,6 @@ if (flags === '-migrate') {
   Logger.info('Database migration has completed.')
   process.exit() // Exit once migration is complete
 } else {
-  // await client.login(config.token)
-  app.listen(config.api.port, () => {
-    Logger.info(`REST API listening on port ${config.api.port}`)
-  })
+  if (config.token) await client.login(config.token)
+  await webHost.start()
 }
