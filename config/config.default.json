@@ -5,7 +5,11 @@
         "host": "localhost",
         "database": "partnya",
         "password": "",
-        "port": "5432"
+        "port": "5432",
+        "enabled": true
+    },
+    "api": {
+        "port": "3001"
     },
     "writeConsoleToFile": false
 }
