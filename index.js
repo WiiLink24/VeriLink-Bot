@@ -59,6 +59,6 @@ if (flags === '-migrate') {
 } else {
   // await client.login(config.token)
   app.listen(config.api.port, () => {
-    Logger.info(`REST API listening on port ${config.api.port}`);
+    Logger.info(`REST API listening on port ${config.api.port}`)
   })
 }
