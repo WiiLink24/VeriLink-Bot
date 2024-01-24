@@ -8,7 +8,7 @@ const config = JSON.parse(String(fs.readFileSync('./config/config.json')))
 export default class VeriLinkClient extends Client {
   constructor (data) {
     super(data)
-    if (config.database.enabled) this.db = new Database()
+    this.db = new Database()
   }
 
   async load () {

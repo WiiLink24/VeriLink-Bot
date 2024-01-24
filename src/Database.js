@@ -12,7 +12,7 @@ export default class Database {
     this.session = null
   }
 
-  async Migrate () {
+  async migrate () {
     const migrationFiles = fs.readdirSync(migrations)
 
     for (const migration of migrationFiles) {
@@ -22,7 +22,7 @@ export default class Database {
     }
   }
 
-  async Connect () {
+  async connect () {
     this.session = new Client(config.database)
     Logger.info('Database connection begun.')
     await this.session.connect()

@@ -48,7 +48,7 @@ client.on(Discord.Events.InteractionCreate, async interaction => {
   }
 })
 
-if (client.db) await client.db.Connect()
+if (client.db && config.database.enabled) await client.db.Connect()
 
 if (flags === '-migrate') {
   Logger.info('Starting database migration...')
