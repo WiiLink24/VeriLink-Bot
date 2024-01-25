@@ -28,12 +28,14 @@ export default class WebHost {
 
   initializeEndpoints () {
     this.app.post('/api/token', async (req, res) => {
-      const token = req.body.code
+      const { code } = req.body
+
+      if (!(code || typeof (code) === 'string')) return res.status(402).send({ success: false, message: 'Request malformed.' })
 
       // Parameters for token request
       const params = new URLSearchParams()
       params.append('grant_type', 'authorization_code')
-      params.append('code', token)
+      params.append('code', code)
       params.append('redirect_uri', config.api.redirectUri)
       params.append('client_id', config.api.clientId)
       params.append('client_secret', config.api.clientSecret)
@@ -64,7 +66,7 @@ export default class WebHost {
       const { token, auth } = req.body
 
       // Make sure the request is not malformed
-      if (!(token || typeof (token) === 'string') || !(auth || typeof (auth) === 'string')) return res.status(402).send({ success: false, message: 'Missing captcha token or auth.' })
+      if (!(token || typeof (token) === 'string') || !(auth || typeof (auth) === 'string')) return res.status(402).send({ success: false, message: 'Request malformed.' })
       const user = await DiscordUtils.getUser(auth)
 
       // Make sure the Discord token is valid
