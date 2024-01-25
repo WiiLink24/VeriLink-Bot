@@ -27,6 +27,7 @@ export default class WebHost {
   }
 
   initializeEndpoints () {
+    // TODO; Refactor this to a more unit testable format
     this.app.post('/api/token', async (req, res) => {
       const { code } = req.body
 
@@ -40,26 +41,16 @@ export default class WebHost {
       params.append('client_id', config.api.clientId)
       params.append('client_secret', config.api.clientSecret)
 
-      const tokenResponse = await axios.post('https://discord.com/api/oauth2/token', params, { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } })
+      const token = await axios.post('https://discord.com/api/oauth2/token', params, { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } })
 
-      if (tokenResponse.data.error) res.status(403).send({ success: false, message: 'Token failed to authenticate.' })
+      if (token.data.error) res.status(403).send({ success: false, message: 'Token failed to authenticate.' })
 
-      const userResponse = await DiscordUtils.getUser(tokenResponse.data.access_token)
-      const userEmail = userResponse.data.email
-      const userEmailDomain = userEmail.split('@')[1]
-
-      // Impose an email service ban. This is to prevent people from using throwaway emails to create accounts.
-      if (this.filteredEmailDomains.includes(userEmailDomain)) return res.status(403).send({ success: false, message: 'You are not allowed to use this service.' })
-
-      // take user IP and check if they are using a VPN
+      const user = await DiscordUtils.getUser(token.data.access_token)
       const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress
+      const valid = DiscordUtils.validate(user, this.filteredEmailDomains, ip)
 
-      if (ip !== '::1') {
-        const vpnResponse = await axios.get(`https://vpnapi.io/api/${ip}?key=${config.api.vpnKey}`)
-        if (vpnResponse?.data?.security?.vpn) return res.status(403).send({ success: false, message: 'Please disable your VPN and try again.' })
-      }
-
-      res.status(200).send({ success: true, token: tokenResponse.data.access_token, data: userResponse.data })
+      if (!valid) return res.status(403).send({ success: false, message: 'Token failed to authenticate.' })
+      res.status(200).send({ success: true, token: token.data.access_token, data: user.data })
     })
 
     this.app.post('/api/captcha', async (req, res) => {
