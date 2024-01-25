@@ -38,7 +38,7 @@ export default class WebHost {
       const valid = await DiscordUtils.validate(user, ip)
 
       if (!valid) return res.status(403).send({ success: false, message: 'You are not allowed to access this service.' })
-      res.status(200).send({ success: true, token, data: user.data })
+      res.status(200).send({ success: true, token, data: user })
     })
 
     this.app.post('/api/captcha', async (req, res) => {
@@ -54,6 +54,8 @@ export default class WebHost {
       const captchaRes = await axios.get(`https://www.google.com/recaptcha/api/siteverify?secret=${config.api.captchaSecret}&response=${token}`)
 
       if (!captchaRes.data.success) return res.status(403).send({ success: false, message: 'Captcha failed to authenticate.' })
+
+      await (await this.client.guilds.cache.get(config.server_id).members.fetch(user.id)).roles.remove(config.role_id)
       res.status(200).send({ success: true })
     })
   }

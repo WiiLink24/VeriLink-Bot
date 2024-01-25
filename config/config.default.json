@@ -18,5 +18,7 @@
         },
         "vpnKey": ""
     },
+    "server_id": "",
+    "role_id": "",
     "writeConsoleToFile": false
 }

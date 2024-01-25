@@ -17,6 +17,10 @@ client.on(Discord.Events.ClientReady, async _ => {
   Logger.info(`Client logged in as user: ${client.user.tag}!`)
 })
 
+client.on(Discord.Events.GuildMemberAdd, async member => {
+  await member.roles.add(config.role_id)
+})
+
 client.on(Discord.Events.InteractionCreate, async interaction => {
   let command
   if (interaction.isCommand()) { // Handle slash commands
