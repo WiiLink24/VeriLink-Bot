@@ -48,7 +48,7 @@ export default class WebHost {
       const token = req.body.token
       const captchaRes = await axios.get(`https://www.google.com/recaptcha/api/siteverify?secret=${config.api.captchaSecret}&response=${token}`)
 
-      if (!captchaRes.data.success) res.status(403).send({ success: false, message: 'Captcha failed to authenticate.' })
+      if (!captchaRes.data.success) return res.status(403).send({ success: false, message: 'Captcha failed to authenticate.' })
       res.status(200).send({ success: true })
     })
   }
