@@ -35,7 +35,7 @@ export default class WebHost {
       if (!token) return res.status(403).send({ success: false, message: 'Token failed to authenticate.' })
 
       const user = await DiscordUtils.getUser(token)
-      const valid = DiscordUtils.validate(user, ip)
+      const valid = await DiscordUtils.validate(user, ip)
 
       if (!valid) return res.status(403).send({ success: false, message: 'You are not allowed to access this service.' })
       res.status(200).send({ success: true, token, data: user.data })

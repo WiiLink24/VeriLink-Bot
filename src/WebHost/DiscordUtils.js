@@ -1,6 +1,7 @@
 import axios from 'axios'
 import fs from 'node:fs'
 import path from 'node:path'
+import qs from 'qs'
 
 const config = JSON.parse(String(fs.readFileSync(path.resolve('config/config.json'))))
 const emailFilter = fs.readFileSync(path.resolve('config/banneddomains.txt')).toString().split('\n')
@@ -16,14 +17,9 @@ async function getUser (accessToken) {
 
 async function convertAccessCode (accessCode) {
   // Parameters for token request
-  const params = new URLSearchParams()
-  params.append('grant_type', 'authorization_code')
-  params.append('code', accessCode)
-  params.append('redirect_uri', config.api.redirectUri)
-  params.append('client_id', config.api.clientId)
-  params.append('client_secret', config.api.clientSecret)
-
+  const params = qs.stringify(Object.assign({ grant_type: 'authorization_code', code: accessCode }, config.api.discord))
   const token = await axios.post('https://discord.com/api/oauth2/token', params, { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } })
+
   if (token.data.error) return null
   return token.data.access_token
 }
