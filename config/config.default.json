@@ -10,7 +10,10 @@
     },
     "api": {
         "port": "3001",
-        "captchaSecret": ""
+        "captchaSecret": "",
+        "redirectUri": "http://localhost:3000",
+        "clientId": "",
+        "clientSecret": ""
     },
     "writeConsoleToFile": false
 }
