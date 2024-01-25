@@ -9,7 +9,8 @@
         "enabled": true
     },
     "api": {
-        "port": "3001"
+        "port": "3001",
+        "captchaSecret": ""
     },
     "writeConsoleToFile": false
 }

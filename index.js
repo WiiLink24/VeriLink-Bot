@@ -5,7 +5,6 @@ import fs from 'node:fs'
 import express from 'express'
 import WebHost from './src/WebHost/WebHost.js'
 import axios from 'axios'
-import 'dotenv/config'
 
 const config = JSON.parse(String(fs.readFileSync('./config/config.json')))
 const flags = process.argv.length > 2 ? process.argv[2] : ''
@@ -58,7 +57,7 @@ app.use(express.json());
 
 app.post("/api/captcha", async (req, res, next) => {
   const token = req.body.token;
-  const captchaRes = await axios.get(`https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${token}`);
+  const captchaRes = await axios.get(`https://www.google.com/recaptcha/api/siteverify?secret=${config.api.catchaSecret}&response=${token}`);
 
   console.log(captchaRes);
 });
