@@ -57,7 +57,7 @@ app.use(express.json());
 
 app.post("/api/captcha", async (req, res, next) => {
   const token = req.body.token;
-  const captchaRes = await axios.get(`https://www.google.com/recaptcha/api/siteverify?secret=${config.api.catchaSecret}&response=${token}`);
+  const captchaRes = await axios.get(`https://www.google.com/recaptcha/api/siteverify?secret=${config.api.captchaSecret}&response=${token}`);
 
   console.log(captchaRes);
 });
