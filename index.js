@@ -4,6 +4,8 @@ import { Logger } from './src/Logger.js'
 import fs from 'node:fs'
 import express from 'express'
 import WebHost from './src/WebHost/WebHost.js'
+import axios from 'axios'
+import 'dotenv/config'
 
 const config = JSON.parse(String(fs.readFileSync('./config/config.json')))
 const flags = process.argv.length > 2 ? process.argv[2] : ''
@@ -51,6 +53,15 @@ client.on(Discord.Events.InteractionCreate, async interaction => {
 })
 
 if (client.db && config.database.enabled) await client.db.Connect()
+
+app.use(express.json());
+
+app.post("/api/captcha", async (req, res, next) => {
+  const token = req.body.token;
+  const captchaRes = await axios.get(`https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${token}`);
+
+  console.log(captchaRes);
+});
 
 if (flags === '-migrate') {
   Logger.info('Starting database migration...')
