@@ -4,6 +4,7 @@ import fs from 'node:fs'
 import express from 'express'
 import axios from 'axios'
 import cors from 'cors'
+import DiscordUtils from './DiscordUtils.js'
 
 const config = JSON.parse(String(fs.readFileSync(path.resolve('config/config.json'))))
 
@@ -41,7 +42,7 @@ export default class WebHost {
 
       if (tokenResponse.data.error) res.status(403).send({ success: false, message: 'Token failed to authenticate.' })
 
-      const userResponse = await axios.get('https://discord.com/api/users/@me', { headers: { Authorization: `Bearer ${tokenResponse.data.access_token}` } })
+      const userResponse = await DiscordUtils.getUser(tokenResponse.data.access_token)
       const userEmail = userResponse.data.email
       const userEmailDomain = userEmail.split('@')[1]
 
@@ -60,7 +61,15 @@ export default class WebHost {
     })
 
     this.app.post('/api/captcha', async (req, res) => {
-      const token = req.body.token
+      const { token, auth } = req.body
+
+      // Make sure the request is not malformed
+      if (!(token || typeof (token) === 'string') || !(auth || typeof (auth) === 'string')) return res.status(402).send({ success: false, message: 'Missing captcha token or auth.' })
+      const user = await DiscordUtils.getUser(auth)
+
+      // Make sure the Discord token is valid
+      if (!user) return res.status(403).send({ success: false, message: 'Token failed to authenticate.' })
+
       const captchaRes = await axios.get(`https://www.google.com/recaptcha/api/siteverify?secret=${config.api.captchaSecret}&response=${token}`)
 
       if (!captchaRes.data.success) return res.status(403).send({ success: false, message: 'Captcha failed to authenticate.' })
