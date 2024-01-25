@@ -3,6 +3,7 @@ import { Logger } from '../Logger.js'
 import fs from 'node:fs'
 import express from 'express'
 import axios from 'axios'
+import cors from 'cors'
 
 const config = JSON.parse(String(fs.readFileSync(path.resolve('config/config.json'))))
 
@@ -11,6 +12,7 @@ export default class WebHost {
     this.client = client
     this.app = app
     this.app.use(express.json())
+    this.app.use(cors())
   }
 
   async start () {
@@ -24,8 +26,10 @@ export default class WebHost {
   initializeEndpoints () {
     this.app.post('/api/captcha', async (req, res, next) => {
       const token = req.body.token
-      const captchaRes = await axios.get(`https://www.google.com/recaptcha/api/siteverify?secret=${config.api.catchaSecret}&response=${token}`)
-      console.log(captchaRes)
+      const captchaRes = await axios.get(`https://www.google.com/recaptcha/api/siteverify?secret=${config.api.captchaSecret}&response=${token}`)
+
+      if (!captchaRes.data.success) res.status(403).send({ success: false, message: 'Captcha failed to authenticate.' })
+      res.status(200).send({ success: true })
     })
   }
 }
