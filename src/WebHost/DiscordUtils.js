@@ -20,8 +20,8 @@ async function validate (user, domains, ip) {
 
   // take user IP and check if they are using a VPN
   if (ip !== '::1') {
-    const vpnResponse = await axios.get(`https://vpnapi.io/api/${ip}?key=${config.api.vpnKey}`)
-    if (vpnResponse?.data?.security?.vpn) return false
+    const isVPN = await axios.get(`https://vpnapi.io/api/${ip}?key=${config.api.vpnKey}`)
+    if (isVPN?.data?.security?.vpn) return false
   }
 
   return true
