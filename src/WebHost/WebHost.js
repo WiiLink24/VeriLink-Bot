@@ -14,8 +14,6 @@ export default class WebHost {
     this.app = app
     this.app.use(express.json())
     this.app.use(cors())
-
-    this.filteredEmailDomains = fs.readFileSync(path.resolve('config/banneddomains.txt')).toString().split('\n')
   }
 
   async start () {
@@ -30,27 +28,17 @@ export default class WebHost {
     // TODO; Refactor this to a more unit testable format
     this.app.post('/api/token', async (req, res) => {
       const { code } = req.body
-
+      const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress
       if (!(code || typeof (code) === 'string')) return res.status(402).send({ success: false, message: 'Request malformed.' })
 
-      // Parameters for token request
-      const params = new URLSearchParams()
-      params.append('grant_type', 'authorization_code')
-      params.append('code', code)
-      params.append('redirect_uri', config.api.redirectUri)
-      params.append('client_id', config.api.clientId)
-      params.append('client_secret', config.api.clientSecret)
+      const token = await DiscordUtils.convertAccessCode(code)
+      if (!token) return res.status(403).send({ success: false, message: 'Token failed to authenticate.' })
 
-      const token = await axios.post('https://discord.com/api/oauth2/token', params, { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } })
+      const user = await DiscordUtils.getUser(token)
+      const valid = DiscordUtils.validate(user, ip)
 
-      if (token.data.error) res.status(403).send({ success: false, message: 'Token failed to authenticate.' })
-
-      const user = await DiscordUtils.getUser(token.data.access_token)
-      const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress
-      const valid = DiscordUtils.validate(user, this.filteredEmailDomains, ip)
-
-      if (!valid) return res.status(403).send({ success: false, message: 'Token failed to authenticate.' })
-      res.status(200).send({ success: true, token: token.data.access_token, data: user.data })
+      if (!valid) return res.status(403).send({ success: false, message: 'You are not allowed to access this service.' })
+      res.status(200).send({ success: true, token, data: user.data })
     })
 
     this.app.post('/api/captcha', async (req, res) => {

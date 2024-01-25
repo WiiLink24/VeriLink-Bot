@@ -3,6 +3,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 const config = JSON.parse(String(fs.readFileSync(path.resolve('config/config.json'))))
+const emailFilter = fs.readFileSync(path.resolve('config/banneddomains.txt')).toString().split('\n')
 
 async function getUser (accessToken) {
   const data = await axios.get('https://discord.com/api/users/@me', { headers: { Authorization: `Bearer ${accessToken}` } })
@@ -13,10 +14,24 @@ async function getUser (accessToken) {
   return data
 }
 
-async function validate (user, domains, ip) {
+async function convertAccessCode (accessCode) {
+  // Parameters for token request
+  const params = new URLSearchParams()
+  params.append('grant_type', 'authorization_code')
+  params.append('code', accessCode)
+  params.append('redirect_uri', config.api.redirectUri)
+  params.append('client_id', config.api.clientId)
+  params.append('client_secret', config.api.clientSecret)
+
+  const token = await axios.post('https://discord.com/api/oauth2/token', params, { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } })
+  if (token.data.error) return null
+  return token.data.access_token
+}
+
+async function validate (user, ip) {
   const domain = user.data.email.split('@')[1]
   // Impose an email service ban. This is to prevent people from using throwaway emails to create accounts.
-  if (domains.includes(domain)) return false
+  if (emailFilter.includes(domain)) return false
 
   // take user IP and check if they are using a VPN
   if (ip !== '::1') {
@@ -29,5 +44,6 @@ async function validate (user, domains, ip) {
 
 export default {
   getUser,
-  validate
+  validate,
+  convertAccessCode
 }
