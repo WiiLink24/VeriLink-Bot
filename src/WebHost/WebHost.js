@@ -51,7 +51,7 @@ export default class WebHost {
       // Make sure the Discord token is valid
       if (!user) return res.status(403).send({ success: false, message: 'Token failed to authenticate.' })
 
-      const captchaRes = await axios.get(`https://www.google.com/recaptcha/api/siteverify?secret=${config.api.captchaSecret}&response=${token}`)
+      const captchaRes = await axios.get(`https://api.hcaptcha.com/siteverify?secret=${config.api.captchaSecret}&response=${token}`)
 
       if (!captchaRes.data.success) return res.status(403).send({ success: false, message: 'Captcha failed to authenticate.' })
 
