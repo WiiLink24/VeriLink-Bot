@@ -11,9 +11,12 @@
     "api": {
         "port": "3001",
         "captchaSecret": "",
-        "redirectUri": "http://localhost:3000",
-        "clientId": "",
-        "clientSecret": ""
+        "discord": {
+            "redirect_uri": "http://localhost:3000",
+            "client_id": "",
+            "client_secret": ""
+        },
+        "vpnKey": ""
     },
     "writeConsoleToFile": false
 }
