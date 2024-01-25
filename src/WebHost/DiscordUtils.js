@@ -6,8 +6,8 @@ import qs from 'qs'
 const config = JSON.parse(String(fs.readFileSync(path.resolve('config/config.json'))))
 const emailFilter = fs.readFileSync(path.resolve('config/banneddomains.txt')).toString().split('\n')
 
-async function getUser (accessToken) {
-  const data = await axios.get('https://discord.com/api/users/@me', { headers: { Authorization: `Bearer ${accessToken}` } })
+async function getUser (accessToken, url = 'https://discord.com/api/users/@me') {
+  const data = await axios.get(url, { headers: { Authorization: `Bearer ${accessToken}` } })
 
   // If the request failed, return null
   if (data.status !== 200) return null
@@ -15,10 +15,10 @@ async function getUser (accessToken) {
   return data
 }
 
-async function convertAccessCode (accessCode) {
+async function convertAccessCode (accessCode, url = 'https://discord.com/api/oauth2/token') {
   // Parameters for token request
   const params = qs.stringify(Object.assign({ grant_type: 'authorization_code', code: accessCode }, config.api.discord))
-  const token = await axios.post('https://discord.com/api/oauth2/token', params, { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } })
+  const token = await axios.post(url, params, { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } })
 
   if (token.data.error) return null
   return token.data.access_token
