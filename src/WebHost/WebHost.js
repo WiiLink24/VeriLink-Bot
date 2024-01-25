@@ -13,6 +13,8 @@ export default class WebHost {
     this.app = app
     this.app.use(express.json())
     this.app.use(cors())
+
+    this.filteredEmailDomains = fs.readFileSync(path.resolve('config/banneddomains.txt')).toString().split('\n')
   }
 
   async start () {
@@ -40,6 +42,19 @@ export default class WebHost {
       if (tokenResponse.data.error) res.status(403).send({ success: false, message: 'Token failed to authenticate.' })
 
       const userResponse = await axios.get('https://discord.com/api/users/@me', { headers: { Authorization: `Bearer ${tokenResponse.data.access_token}` } })
+      const userEmail = userResponse.data.email
+      const userEmailDomain = userEmail.split('@')[1]
+
+      // Impose an email service ban. This is to prevent people from using throwaway emails to create accounts.
+      if (this.filteredEmailDomains.includes(userEmailDomain)) return res.status(403).send({ success: false, message: 'You are not allowed to use this service.' })
+
+      // take user IP and check if they are using a VPN
+      const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress
+
+      if (ip !== '::1') {
+        const vpnResponse = await axios.get(`https://vpnapi.io/api/${ip}?key=${config.api.vpnKey}`)
+        if (vpnResponse?.data?.security?.vpn) return res.status(403).send({ success: false, message: 'Please disable your VPN and try again.' })
+      }
 
       res.status(200).send({ success: true, token: tokenResponse.data.access_token, data: userResponse.data })
     })
