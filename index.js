@@ -1,4 +1,4 @@
-import Discord from 'discord.js'
+import Discord, { TextChannel } from 'discord.js'
 import VeriLinkClient from './src/VeriLinkClient.js'
 import { Logger } from './src/Logger.js'
 import fs from 'node:fs'
@@ -7,7 +7,7 @@ import WebHost from './src/WebHost/WebHost.js'
 
 const config = JSON.parse(String(fs.readFileSync('./config/config.json')))
 const flags = process.argv.length > 2 ? process.argv[2] : ''
-const client = new VeriLinkClient({ intents: [Discord.IntentsBitField.Flags.Guilds] })
+const client = new VeriLinkClient({ intents: ['Guilds', 'GuildMembers'] })
 const app = express()
 const webHost = new WebHost(client, app)
 
@@ -18,6 +18,11 @@ client.on(Discord.Events.ClientReady, async _ => {
 })
 
 client.on(Discord.Events.GuildMemberAdd, async member => {
+  Logger.info('Member joined the server')
+  const channel = await member.guild.channels.fetch('1199533703852994751')
+  if (channel.sendable) {
+    await channel.send(`${member} has joined the server`)
+  }
   await member.roles.add(config.role_id)
 })
 

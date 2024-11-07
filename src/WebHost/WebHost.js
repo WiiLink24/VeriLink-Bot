@@ -5,6 +5,7 @@ import express from 'express'
 import axios from 'axios'
 import cors from 'cors'
 import DiscordUtils from './DiscordUtils.js'
+import { TextChannel } from 'discord.js'
 
 const config = JSON.parse(String(fs.readFileSync(path.resolve('config/config.json'))))
 
@@ -37,7 +38,19 @@ export default class WebHost {
       const user = await DiscordUtils.getUser(token)
       const valid = await DiscordUtils.validate(user, ip)
 
-      if (!valid) return res.status(403).send({ success: false, message: 'You are not allowed to access this service.' })
+      const channel = await this.client.channels.fetch('1199533703852994751')
+
+      if (!valid) {
+        if (channel instanceof TextChannel) {
+          Logger.info('Failed')
+          await channel.send(`${user.username} has failed validation due to having a VPN.`)
+        }
+
+        return res.status(403).send({
+          success: false,
+          message: 'You are not allowed to access this service.'
+        })
+      }
       res.status(200).send({ success: true, token, data: user })
     })
 
@@ -53,7 +66,15 @@ export default class WebHost {
 
       const captchaRes = await axios.get(`https://api.hcaptcha.com/siteverify?secret=${config.api.captchaSecret}&response=${token}`)
 
-      if (!captchaRes.data.success) return res.status(403).send({ success: false, message: 'Captcha failed to authenticate.' })
+      if (!captchaRes.data.success) {
+        const channel = await this.client.channels.fetch('1199533703852994751')
+        if (channel instanceof TextChannel) {
+          Logger.info('Failed')
+          await channel.send(`${user.username} has failed validation due to failing the captcha.`)
+        }
+
+        return res.status(403).send({ success: false, message: 'Captcha failed to authenticate.' })
+      }
 
       await (await this.client.guilds.cache.get(config.server_id).members.fetch(user.id)).roles.remove(config.role_id)
       res.status(200).send({ success: true })
