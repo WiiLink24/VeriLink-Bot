@@ -20,5 +20,6 @@
     },
     "server_id": "",
     "role_id": "",
-    "writeConsoleToFile": false
+    "writeConsoleToFile": false,
+    "banned_ips": []
 }

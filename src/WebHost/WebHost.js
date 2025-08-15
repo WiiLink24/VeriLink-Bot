@@ -40,10 +40,10 @@ export default class WebHost {
 
       const channel = await this.client.channels.fetch('1199533703852994751')
 
-      if (!valid) {
+      if (typeof(valid) === "string") {
         if (channel instanceof TextChannel) {
           Logger.info('Failed')
-          await channel.send(`${user.username} has failed validation due to having a VPN.`)
+          await channel.send(valid)
         }
 
         return res.status(403).send({

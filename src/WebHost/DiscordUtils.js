@@ -30,15 +30,16 @@ async function convertAccessCode (accessCode, url = 'https://discord.com/api/oau
 async function validate (user, ip) {
   const domain = user.email.split('@')[1]
   // Impose an email service ban. This is to prevent people from using throwaway emails to create accounts.
-  if (emailFilter.includes(domain)) return false
+  if (emailFilter.includes(domain)) return `${user.username} has failed validation due to having a banned email address.`
+  if (config.banned_ips.includes(ip)) return `${user.username} has failed validation due to having a banned IP address.`
 
   // take user IP and check if they are using a VPN
   if (ip !== '::1') {
     const isVPN = await axios.get(`https://vpnapi.io/api/${ip}?key=${config.api.vpnKey}`)
-    if (isVPN?.data?.security?.vpn) return false
+    if (isVPN?.data?.security?.vpn) return `${user.username} has failed validation due to having a VPN.`
   }
 
-  return true
+  return null
 }
 
 export default {
