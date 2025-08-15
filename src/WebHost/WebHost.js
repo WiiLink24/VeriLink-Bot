@@ -69,6 +69,7 @@ export default class WebHost {
       const captchaRes = await axios.get(`https://api.hcaptcha.com/siteverify?secret=${config.api.captchaSecret}&response=${token}`)
 
       if (!captchaRes.data.success) {
+        console.log(captchaRes)
         const channel = await this.client.channels.fetch('1199533703852994751')
         if (channel instanceof TextChannel) {
           Logger.info('Failed')
