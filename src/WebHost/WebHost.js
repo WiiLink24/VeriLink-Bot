@@ -56,6 +56,7 @@ export default class WebHost {
 
     this.app.post('/api/captcha', async (req, res) => {
       const { token, auth } = req.body
+      const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress
 
       // Make sure the request is not malformed
       if (!(token || typeof (token) === 'string') || !(auth || typeof (auth) === 'string')) return res.status(402).send({ success: false, message: 'Request malformed.' })
@@ -63,6 +64,7 @@ export default class WebHost {
 
       // Make sure the Discord token is valid
       if (!user) return res.status(403).send({ success: false, message: 'Token failed to authenticate.' })
+      console.log(`${user.username}: ${ip}`)
 
       const captchaRes = await axios.get(`https://api.hcaptcha.com/siteverify?secret=${config.api.captchaSecret}&response=${token}`)
 
