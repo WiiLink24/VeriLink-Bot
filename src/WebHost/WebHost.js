@@ -50,8 +50,8 @@ export default class WebHost {
         await (await this.client.guilds.cache.get(config.server_id).members.fetch(user.id)).roles.add("1407125507581153467")
       }
 
-      if (ip_mappings[user.id]) {
-        channel.send(`${user.username}'s IP matches ${ip_mappings[user.id]}.`)
+      if (ip_mappings[user.id] !== undefined) {
+        channel.send(`${user.username}'s IP matches ${ip_mappings[user.id].username} (${ip_mappings[user.id].id}).`)
         await (await this.client.guilds.cache.get(config.server_id).members.fetch(user.id)).roles.add("288058293669330944")
       }
 
@@ -81,7 +81,7 @@ export default class WebHost {
       if (!user) return res.status(403).send({ success: false, message: 'Token failed to authenticate.' })
       console.log(`${user.username}: ${ip}`)
 
-      if (!ip_mappings[user.id]) {
+      if (ip_mappings[user.id] === undefined) {
         ip_mappings[user.id] = { username: user.username, ip }
         fs.writeFileSync("config/ip_mapping.json", JSON.stringify(ip_mappings))
       }
