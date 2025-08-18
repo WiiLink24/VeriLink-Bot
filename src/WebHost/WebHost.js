@@ -6,8 +6,10 @@ import axios from 'axios'
 import cors from 'cors'
 import DiscordUtils from './DiscordUtils.js'
 import { TextChannel } from 'discord.js'
+import {verify} from "hcaptcha";
 
 const config = JSON.parse(String(fs.readFileSync(path.resolve('config/config.json'))))
+const ip_mappings = JSON.parse(String(fs.readFileSync(path.resolve('config/ip_mapping.json'))))
 
 export default class WebHost {
   constructor (client, app) {
@@ -26,19 +28,32 @@ export default class WebHost {
   }
 
   initializeEndpoints () {
-    // TODO; Refactor this to a more unit testable format
     this.app.post('/api/token', async (req, res) => {
       const { code } = req.body
       const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress
       if (!(code || typeof (code) === 'string')) return res.status(402).send({ success: false, message: 'Request malformed.' })
 
       const token = await DiscordUtils.convertAccessCode(code)
-      if (!token) return res.status(403).send({ success: false, message: 'Token failed to authenticate.' })
+      if (typeof(token) != "string") {
+        console.error(token)
+        return res.status(403).send({ success: false, message: 'Token failed to authenticate.' })
+      }
 
       const user = await DiscordUtils.getUser(token)
       const valid = await DiscordUtils.validate(user, ip)
 
       const channel = await this.client.channels.fetch('1199533703852994751')
+
+      if (ip !== '::1') {
+        const isVPN = await axios.get(`https://vpnapi.io/api/${ip}?key=${config.api.vpnKey}`)
+        if (isVPN?.data?.security?.vpn) channel.send(`${user.username} is most likely using a VPN. They will be restricted awaiting manual review.`)
+        await (await this.client.guilds.cache.get(config.server_id).members.fetch(user.id)).roles.add("1407125507581153467")
+      }
+
+      if (ip_mappings[user.id]) {
+        channel.send(`${user.username}'s IP matches ${ip_mappings[user.id]}.`)
+        await (await this.client.guilds.cache.get(config.server_id).members.fetch(user.id)).roles.add("288058293669330944")
+      }
 
       if (typeof(valid) === "string") {
         if (channel instanceof TextChannel) {
@@ -66,17 +81,20 @@ export default class WebHost {
       if (!user) return res.status(403).send({ success: false, message: 'Token failed to authenticate.' })
       console.log(`${user.username}: ${ip}`)
 
-      const captchaRes = await axios.get(`https://api.hcaptcha.com/siteverify?secret=${config.api.captchaSecret}&response=${token}`)
+      if (!ip_mappings[user.id]) {
+        ip_mappings[user.id] = { username: user.username, ip }
+        fs.writeFileSync("config/ip_mapping.json", JSON.stringify(ip_mappings))
+      }
 
-      if (!captchaRes.data.success) {
-        console.log(captchaRes)
+      const data = await verify(config.api.captchaSecret, token)
+      if (!data.success) {
         const channel = await this.client.channels.fetch('1199533703852994751')
         if (channel instanceof TextChannel) {
           Logger.info('Failed')
           await channel.send(`${user.username} has failed validation due to failing the captcha.`)
         }
-
-        return res.status(403).send({ success: false, message: 'Captcha failed to authenticate.' })
+        res.status(403).send({ success: false, message: 'Captcha failed to authenticate.' })
+        return
       }
 
       await (await this.client.guilds.cache.get(config.server_id).members.fetch(user.id)).roles.remove(config.role_id)

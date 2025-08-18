@@ -21,9 +21,7 @@ async function convertAccessCode (accessCode, url = 'https://discord.com/api/oau
   const token = await axios.post(url, params, { validateStatus: () => true, headers: { 'Content-Type': 'application/x-www-form-urlencoded' } })
 
   // If the request failed, return null
-  if (token.status !== 200) return null
-
-  if (token.data.error) return null
+  if (token.data.error || token.status !== 200) return token
   return token.data.access_token
 }
 
@@ -32,12 +30,6 @@ async function validate (user, ip) {
   // Impose an email service ban. This is to prevent people from using throwaway emails to create accounts.
   if (emailFilter.includes(domain)) return `${user.username} has failed validation due to having a banned email address.`
   if (config.banned_ips.includes(ip)) return `${user.username} has failed validation due to having a banned IP address.`
-
-  // take user IP and check if they are using a VPN
-  if (ip !== '::1') {
-    const isVPN = await axios.get(`https://vpnapi.io/api/${ip}?key=${config.api.vpnKey}`)
-    if (isVPN?.data?.security?.vpn) return `${user.username} has failed validation due to having a VPN.`
-  }
 
   return null
 }
