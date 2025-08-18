@@ -45,8 +45,10 @@ export default class WebHost {
 
       if (ip !== '::1') {
         const isVPN = await axios.get(`https://vpnapi.io/api/${ip}?key=${config.api.vpnKey}`)
-        if (isVPN?.data?.security?.vpn) channel.send(`${user.username} is most likely using a VPN. They will be restricted awaiting manual review.`)
-        await (await this.client.guilds.cache.get(config.server_id).members.fetch(user.id)).roles.add("1407125507581153467")
+        if (isVPN?.data?.security?.vpn) {
+          channel.send(`${user.username} is most likely using a VPN. They will be restricted awaiting manual review.`)
+          await (await this.client.guilds.cache.get(config.server_id).members.fetch(user.id)).roles.add("1407125507581153467")
+        }
       }
 
       if (ip_mappings[ip] !== undefined) {
