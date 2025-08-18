@@ -6,8 +6,6 @@ import axios from 'axios'
 import cors from 'cors'
 import DiscordUtils from './DiscordUtils.js'
 import { TextChannel } from 'discord.js'
-import {verify} from "hcaptcha";
-import {cache} from "express/lib/application.js";
 
 const config = JSON.parse(String(fs.readFileSync(path.resolve('config/config.json'))))
 const ip_mappings = JSON.parse(String(fs.readFileSync(path.resolve('config/ip_mapping.json'))))
