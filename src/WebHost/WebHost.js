@@ -82,7 +82,7 @@ export default class WebHost {
       console.log(`${user.username}: ${ip}`)
 
       if (ip_mappings[user.id] === undefined) {
-        ip_mappings[user.id] = { username: user.username, ip }
+        ip_mappings[user.id] = { username: user.username, id: user.id, ip }
         fs.writeFileSync("config/ip_mapping.json", JSON.stringify(ip_mappings))
       }
 
