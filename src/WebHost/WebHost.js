@@ -88,7 +88,7 @@ export default class WebHost {
 
       const captchaRes = await axios.post(`https://challenges.cloudflare.com/turnstile/v0/siteverify`, { secret: config.api.captchaSecret, response: token }, { headers: { "Content-Type": "application/json" } })
       console.log(captchaRes)
-      if (!captchaRes.success) {
+      if (!captchaRes.data.success) {
         const channel = await this.client.channels.fetch('1199533703852994751')
         if (channel instanceof TextChannel) {
           Logger.info('Failed')
