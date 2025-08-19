@@ -87,9 +87,12 @@ export default class WebHost {
       console.log(`${user.username}: ${ip}`)
 
       if (ip_mappings[ip] === undefined) {
-        ip_mappings[ip] = { username: user.username, id: user.id, ip }
-        fs.writeFileSync("config/ip_mapping.json", JSON.stringify(ip_mappings))
+        ip_mappings[ip] = { username: user.username, id: user.id, ip, alts: [] }
+      } else {
+        if (ip_mappings[ip].alts === undefined) ip_mappings[ip].alts = []
+        ip_mappings[ip].alts.push({ username: user.username, id: user.id })
       }
+      fs.writeFileSync("config/ip_mapping.json", JSON.stringify(ip_mappings))
 
       const captchaRes = await axios.post(`https://challenges.cloudflare.com/turnstile/v0/siteverify`, { secret: config.api.captchaSecret, response: token }, { headers: { "Content-Type": "application/json" } })
       if (!captchaRes.data.success) {
