@@ -54,7 +54,7 @@ export default class WebHost {
       if (ip_mappings[ip] !== undefined) {
         channel.send(`<@${user.id}> (${user.username})'s IP matches ${ip_mappings[ip].username} (${ip_mappings[ip].id}).`)
 
-        const member = this.client.guilds.cache.get(config.server_id).members.fetch(user.id)
+        const member = await this.client.guilds.cache.get(config.server_id).members.fetch(user.id)
         this.client.guilds.cache.get(config.server_id).bans.fetch(ip_mappings[ip].id)
           .then(() => { console.log("Banned"); member.roles.add("1344054695471218769") })
           .catch(() => { console.log("Alt account"); member.roles.add("288058293669330944") })
