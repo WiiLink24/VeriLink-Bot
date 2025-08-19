@@ -52,11 +52,12 @@ export default class WebHost {
       }
 
       if (ip_mappings[ip] !== undefined) {
-        channel.send(`${user.username}'s IP matches ${ip_mappings[ip].username} (${ip_mappings[ip].id}).`)
+        channel.send(`<@${user.id}> (${user.username})'s IP matches ${ip_mappings[ip].username} (${ip_mappings[ip].id}).`)
 
+        const member = this.client.guilds.cache.get(config.server_id).members.fetch(user.id)
         this.client.guilds.cache.get(config.server_id).bans.fetch(ip_mappings[ip].id)
-          .then(() => { this.client.guilds.cache.get(config.server_id).members.fetch(user.id).roles.add("1344054695471218769") })
-          .catch(() => { this.client.guilds.cache.get(config.server_id).members.fetch(user.id).roles.add("288058293669330944") })
+          .then(() => { console.log("Banned"); member.roles.add("1344054695471218769") })
+          .catch(() => { console.log("Alt account"); member.roles.add("288058293669330944") })
       }
 
       if (typeof(valid) === "string") {
@@ -91,7 +92,6 @@ export default class WebHost {
       }
 
       const captchaRes = await axios.post(`https://challenges.cloudflare.com/turnstile/v0/siteverify`, { secret: config.api.captchaSecret, response: token }, { headers: { "Content-Type": "application/json" } })
-      console.log(captchaRes)
       if (!captchaRes.data.success) {
         const channel = await this.client.channels.fetch('1199533703852994751')
         if (channel instanceof TextChannel) {
