@@ -51,7 +51,7 @@ export default class WebHost {
         }
       }
 
-      if (ip_mappings[ip] !== undefined) {
+      if (ip_mappings[ip] !== undefined && ip_mappings[ip].id !== user.id) {
         channel.send(`<@${user.id}> (${user.username})'s IP matches ${ip_mappings[ip].username} (${ip_mappings[ip].id}).`)
 
         const member = await this.client.guilds.cache.get(config.server_id).members.fetch(user.id)
