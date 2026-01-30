@@ -29,7 +29,6 @@ export default class WebHost {
   initializeEndpoints () {
     this.app.post('/api/token', async (req, res) => {
       const { code } = req.body
-      console.log(req.headers)
       const ip = req.headers['cf-connecting-ip']
       if (!(code || typeof (code) === 'string')) return res.status(402).send({ success: false, message: 'Request malformed.' })
 
@@ -77,7 +76,7 @@ export default class WebHost {
 
     this.app.post('/api/captcha', async (req, res) => {
       const { token, auth } = req.body
-      const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress
+      const ip = req.headers['cf-connecting-ip']
 
       // Make sure the request is not malformed
       if (!(token || typeof (token) === 'string') || !(auth || typeof (auth) === 'string')) return res.status(402).send({ success: false, message: 'Request malformed.' })
