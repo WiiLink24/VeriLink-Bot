@@ -29,6 +29,7 @@ export default class WebHost {
   initializeEndpoints () {
     this.app.post('/api/token', async (req, res) => {
       const { code } = req.body
+      console.log(req.headers)
       const ip = req.headers['CF-Connecting-IP'] || req.headers['x-forwarded-for'] || req.socket.remoteAddress
       if (!(code || typeof (code) === 'string')) return res.status(402).send({ success: false, message: 'Request malformed.' })
 
