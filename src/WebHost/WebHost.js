@@ -29,7 +29,7 @@ export default class WebHost {
   initializeEndpoints () {
     this.app.post('/api/token', async (req, res) => {
       const { code } = req.body
-      const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress
+      const ip = req.headers['CF-Connecting-IP'] || req.headers['x-forwarded-for'] || req.socket.remoteAddress
       if (!(code || typeof (code) === 'string')) return res.status(402).send({ success: false, message: 'Request malformed.' })
 
       const token = await DiscordUtils.convertAccessCode(code)
